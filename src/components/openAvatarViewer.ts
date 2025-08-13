@@ -8,8 +8,6 @@ import isObject from '../helpers/object/isObject';
 import {Photo, MessageAction, Message} from '../layer';
 import apiManagerProxy from '../lib/mtproto/mtprotoworker';
 import rootScope from '../lib/rootScope';
-import AppMediaViewer from './appMediaViewer';
-import AppMediaViewerAvatar from './appMediaViewerAvatar';
 
 export default async function openAvatarViewer(
   target: HTMLElement,
@@ -65,6 +63,7 @@ export default async function openAvatarViewer(
         peerId: (el.item as Message.messageService).peerId
       }));
 
+      const {default: AppMediaViewer} = await import('./appMediaViewer');
       new AppMediaViewer()
       .setSearchContext({
         peerId,
@@ -91,6 +90,7 @@ export default async function openAvatarViewer(
       photoId: el.item as string
     }));
 
+    const {default: AppMediaViewerAvatar} = await import('./appMediaViewerAvatar');
     new AppMediaViewerAvatar(peerId).openMedia({
       photoId: photo.id,
       target: getTarget(),

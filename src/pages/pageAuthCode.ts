@@ -14,8 +14,6 @@ import {i18n, LangPackKey} from '../lib/langPack';
 import {randomLong} from '../helpers/random';
 import replaceContent from '../helpers/dom/replaceContent';
 import rootScope from '../lib/rootScope';
-import lottieLoader from '../lib/rlottie/lottieLoader';
-import RLottiePlayer from '../lib/rlottie/rlottiePlayer';
 import setBlankToAnchor from '../lib/richTextProcessor/setBlankToAnchor';
 import {attachClickEvent} from '../helpers/dom/clickEvent';
 import Icon from '../components/icon';
@@ -25,7 +23,7 @@ let authSentCode: AuthSentCode.authSentCode = null;
 let headerElement: HTMLHeadElement = null;
 let sentTypeElement: HTMLParagraphElement = null;
 let codeInput: HTMLInputElement, codeInputField: CodeInputField;
-let monkey: TrackingMonkey, player: RLottiePlayer;
+let monkey: TrackingMonkey, player: any;
 
 const cleanup = () => {
   setTimeout(() => {
@@ -117,7 +115,7 @@ const onFirstMount = () => {
   });
 };
 
-const getAnimation = () => {
+const getAnimation = async() => {
   const imageDiv = page.pageEl.querySelector('.auth-image') as HTMLDivElement;
   const size = mediaSizes.isMobile ? 100 : 166;
   if(authSentCode.type._ === 'auth.sentCodeTypeFragmentSms') {
@@ -130,6 +128,7 @@ const getAnimation = () => {
     const container = document.createElement('div');
     container.classList.add('media-sticker-wrapper');
     imageDiv.append(container);
+    const {default: lottieLoader} = await import('../lib/rlottie/lottieLoader');
     return lottieLoader.loadAnimationAsAsset({
       container: container,
       loop: true,

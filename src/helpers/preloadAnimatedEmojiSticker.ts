@@ -5,7 +5,6 @@
  */
 
 import appDownloadManager from '../lib/appManagers/appDownloadManager';
-import lottieLoader from '../lib/rlottie/lottieLoader';
 import rootScope from '../lib/rootScope';
 import {getEmojiToneIndex} from '../vendor/emoji';
 import mediaSizes from './mediaSizes';
@@ -20,6 +19,7 @@ export default function preloadAnimatedEmojiSticker(emoji: string, width?: numbe
 
     return appDownloadManager.downloadMedia({media: doc})
     .then(async(blob) => {
+      const {default: lottieLoader} = await import('../lib/rlottie/lottieLoader');
       const mediaSize = mediaSizes.active.emojiSticker;
       const toneIndex = getEmojiToneIndex(emoji);
       const middlewareHelper = getMiddleware();

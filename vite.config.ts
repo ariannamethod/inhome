@@ -72,7 +72,9 @@ export default defineConfig({
     USE_SSL ? (basicSsl as any)(SSL_CONFIG) : undefined,
     visualizer({
       gzipSize: true,
-      template: 'treemap'
+      template: 'treemap',
+      filename: 'stats.html',
+      open: true
     })
   ].filter(Boolean),
   test: {
@@ -112,13 +114,24 @@ export default defineConfig({
     emptyOutDir: true,
     minify: NO_MINIFY ? false : undefined,
     rollupOptions: {
+      input: {
+        main: resolve(rootDir, 'index.html'),
+        sw: resolve(rootDir, 'sw.ts')
+      },
       output: {
-        sourcemapIgnoreList: serverOptions.sourcemapIgnoreList
+        sourcemapIgnoreList: serverOptions.sourcemapIgnoreList,
+        manualChunks(id) {
+          if(id.includes('prismjs')) {
+            return 'prism';
+          }
+          if(id.includes('rlottie')) {
+            return 'rlottie';
+          }
+          if(id.includes('appMediaViewer')) {
+            return 'media-viewer';
+          }
+        }
       }
-      // input: {
-      //   main: './index.html',
-      //   sw: './src/index.service.ts'
-      // }
     }
     // cssCodeSplit: true
   },
