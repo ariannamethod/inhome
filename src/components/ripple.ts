@@ -91,7 +91,7 @@ export default function ripple(
       }
 
       handler = null;
-      touchStartFired = false;
+      hasActiveTouchStart = false;
     };
     // });
 
@@ -175,8 +175,8 @@ export default function ripple(
     ) && !findUpClassName(e.target, 'checkbox-field');
   };
 
-  // TODO: rename this variable
-  let touchStartFired = false;
+  // Tracks if a touchstart event is currently active to avoid duplicate ripples
+  let hasActiveTouchStart = false;
   if(IS_TOUCH_SUPPORTED) {
     const touchEnd = () => {
       handler?.();
@@ -188,12 +188,12 @@ export default function ripple(
       }
 
       // console.log('ripple touchstart', e);
-      if(e.touches.length > 1 || touchStartFired || isRippleUnneeded(e)) {
+      if(e.touches.length > 1 || hasActiveTouchStart || isRippleUnneeded(e)) {
         return;
       }
 
       // console.log('touchstart', e);
-      touchStartFired = true;
+      hasActiveTouchStart = true;
 
       const {clientX, clientY} = e.touches[0];
       drawRipple(clientX, clientY);
@@ -225,8 +225,8 @@ export default function ripple(
 
       if(attachListenerTo.dataset.ripple === '0' || isRippleUnneeded(e)) {
         return;
-      } else if(touchStartFired) {
-        touchStartFired = false;
+      } else if(hasActiveTouchStart) {
+        hasActiveTouchStart = false;
         return;
       }
 
