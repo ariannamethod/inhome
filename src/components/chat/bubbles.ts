@@ -58,6 +58,8 @@ import SetTransition from '../singleTransition';
 import handleHorizontalSwipe from '../../helpers/dom/handleHorizontalSwipe';
 import findUpAttribute from '../../helpers/dom/findUpAttribute';
 import findUpAsChild from '../../helpers/dom/findUpAsChild';
+import {createEffect, createRoot} from 'solid-js';
+import {createVirtualizer, type Virtualizer} from '@tanstack/solid-virtual';
 import {wrapCallDuration} from '../wrappers/wrapDuration';
 import IS_CALL_SUPPORTED from '../../environment/callSupport';
 import Button from '../button';
@@ -343,6 +345,7 @@ export default class ChatBubbles {
   public container: HTMLDivElement;
   public chatInner: HTMLDivElement;
   public scrollable: Scrollable;
+  private virtualizer: Virtualizer<HTMLDivElement, HTMLElement>;
 
   private getHistoryTopPromise: Promise<boolean>;
   private getHistoryBottomPromise: Promise<boolean>;
@@ -1143,6 +1146,38 @@ export default class ChatBubbles {
 
     const chatInner = this.chatInner = document.createElement('div');
     chatInner.classList.add('bubbles-inner');
+
+    // mount inner list into scrollable container for virtualization
+    this.scrollable.container.append(chatInner);
+
+    // setup virtualizer to render only visible message bubbles
+    createRoot(() => {
+      this.virtualizer = createVirtualizer({
+        count: () => this.scrollable.container.childElementCount,
+        getScrollElement: () => this.scrollable.container,
+        estimateSize: () => 72,
+        overscan: 10
+      });
+
+      const renderRange = () => {
+        const items = this.virtualizer.getVirtualItems();
+        chatInner.style.height = `${this.virtualizer.getTotalSize()}px`;
+        chatInner.innerHTML = '';
+
+        items.forEach((item) => {
+          const el = this.scrollable.container.children.item(item.index) as HTMLElement;
+          if(el) {
+            el.style.position = 'absolute';
+            el.style.top = '0';
+            el.style.left = '0';
+            el.style.transform = `translateY(${item.start}px)`;
+            chatInner.append(el);
+          }
+        });
+      };
+
+      createEffect(renderRange);
+    });
 
     const removerContainer = document.createElement('div');
     removerContainer.classList.add('bubbles-remover-container');
