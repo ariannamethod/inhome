@@ -6,7 +6,7 @@
 
 import contextMenuController from '../helpers/contextMenuController';
 import cancelEvent from '../helpers/dom/cancelEvent';
-import {AttachClickOptions, CLICK_EVENT_NAME, hasMouseMovedSinceDown} from '../helpers/dom/clickEvent';
+import {AttachClickOptions, attachClickEvent} from '../helpers/dom/clickEvent';
 import ListenerSetter from '../helpers/listenerSetter';
 import ButtonIcon from './buttonIcon';
 import ButtonMenu, {ButtonMenuItemOptionsVerifiable} from './buttonMenu';
@@ -14,7 +14,6 @@ import filterAsync from '../helpers/array/filterAsync';
 import {doubleRaf} from '../helpers/schedulers';
 import callbackify from '../helpers/callbackify';
 
-// TODO: refactor for attachClickEvent, because if move finger after touchstart, it will start anyway
 export function ButtonMenuToggleHandler({
   el,
   onOpen,
@@ -26,10 +25,8 @@ export function ButtonMenuToggleHandler({
   options?: AttachClickOptions,
   onClose?: () => void
 }) {
-  const add = options?.listenerSetter ? options.listenerSetter.add(el) : el.addEventListener.bind(el);
-
-  add(CLICK_EVENT_NAME, (e: Event) => {
-    if(!el.classList.contains('btn-menu-toggle') || hasMouseMovedSinceDown(e)) return false;
+  attachClickEvent(el, (e: Event) => {
+    if(!el.classList.contains('btn-menu-toggle')) return false;
 
     cancelEvent(e);
 
@@ -48,7 +45,7 @@ export function ButtonMenuToggleHandler({
 
       callbackify(result, open);
     }
-  });
+  }, {...options, ignoreMove: false});
 }
 
 export function filterButtonMenuItems(buttons: ButtonMenuItemOptionsVerifiable[]) {
