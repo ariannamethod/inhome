@@ -3,8 +3,40 @@ const express = require('express');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
+const helmet = require('helmet');
+const cors = require('cors');
 
 const app = express();
+
+const whitelist = [
+  'https://web.telegram.org',
+  'https://t.me'
+];
+
+app.use(helmet());
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", 'https://web.telegram.org'],
+      imgSrc: ["'self'", 'data:', 'https://web.telegram.org'],
+      connectSrc: ["'self'", 'https://web.telegram.org', 'wss://web.telegram.org'],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"]
+    }
+  })
+);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || whitelist.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    }
+  })
+);
 
 const thirdTour = process.argv[2] == 3;
 const forcePort = process.argv[3];
