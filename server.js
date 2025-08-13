@@ -1,6 +1,8 @@
 const compression = require('compression');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis');
+const { createClient } = require('redis');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
@@ -75,10 +77,28 @@ app.use((req, res, next) => {
   next();
 });
 app.use(compression());
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-}));
+
+const redisClient = createClient({
+  url: process.env.REDIS_URL || 'redis://localhost:6379'
+});
+
+redisClient.on('error', (err) => {
+  console.error('Redis client error', err);
+});
+
+redisClient.connect().catch((err) => {
+  console.error('Redis connection error:', err);
+});
+
+app.use(
+  rateLimit({
+    store: new RedisStore({
+      sendCommand: (...args) => redisClient.sendCommand(args)
+    }),
+    windowMs: 15 * 60 * 1000,
+    max: 100
+  })
+);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(publicFolderName));
 
