@@ -9,28 +9,20 @@ import ctx from '../environment/ctx';
 type CacheFunction = (...args: any[]) => any;
 const cache: Map<CacheFunction, {result: any, timeout: number}> = new Map();
 
-Function.prototype.cache = function(thisArg, ...args: any[]) {
-  let cached = cache.get(this);
+export default function cacheFn<T, A extends any[], R>(fn: (this: T, ...args: A) => R, thisArg?: T, ...args: A): R {
+  let cached = cache.get(fn);
   if(cached) {
     return cached.result;
   }
 
-  const result = this.apply(thisArg, args as any);
+  const result = fn.apply(thisArg as any, args as any);
 
-  cache.set(this, cached = {
+  cache.set(fn, cached = {
     result,
     timeout: ctx.setTimeout(() => {
-      cache.delete(this);
+      cache.delete(fn);
     }, 60000)
   });
 
   return result;
-};
-
-declare global {
-  interface Function {
-    cache<T, A extends any[], R>(this: (this: T, ...args: A) => R, thisArg?: T, ...args: A): R;
-  }
 }
-
-export {};
