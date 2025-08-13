@@ -44,11 +44,9 @@ app.post('/api/snapshots', (req, res) => {
 
   fs.writeFile(filepath, data, (err) => {
     if(err) {
-      res.status = 500;
-      res.json({message: 'something went wrong'});
-    } else {
-      res.json({success: true, filename});
+      return res.status(500).json({message: 'something went wrong'});
     }
+    res.json({success: true, filename});
   });
 });
 
