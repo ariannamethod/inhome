@@ -26,11 +26,17 @@ export class CryptoMessagePort<Master extends boolean = false> extends SuperMess
     this.lastIndex = -1;
   }
 
+  /**
+   * Methods supporting transferables:
+   * sha1, sha256, pbkdf2, aes-encrypt, aes-decrypt, rsa-encrypt, factorize,
+   * mod-pow, gzipUncompress, computeSRP, generate-dh, compute-dh-key,
+   * get-emojis-fingerprint, aes-ctr-prepare, aes-ctr-process,
+   * aes-local-encrypt and aes-local-decrypt.
+   */
   // TODO: Transfer transferables on result tasks?
-  public invokeCryptoNew<T extends keyof CryptoMethods>({method, args, transfer}: {
+  public invokeCryptoNew<T extends keyof CryptoMethods>({method, args}: {
     method: T,
-    args: Parameters<CryptoMethods[T]>,
-    transfer?: Transferable[]
+    args: Parameters<CryptoMethods[T]>
   }): Promise<Awaited<SuperMessagePort.TransferableResultValue<ReturnType<CryptoMethods[T]>>>> {
     const payload = {method, args};
     const listeners = this.listeners['invoke'];
@@ -46,6 +52,18 @@ export class CryptoMessagePort<Master extends boolean = false> extends SuperMess
       //   return Promise.reject(err);
       // }
     }
+
+    const transfer: Transferable[] = [];
+    const push = (v: any) => {
+      if(v instanceof ArrayBuffer || v instanceof CryptoKey) {
+        transfer.push(v);
+      } else if(ArrayBuffer.isView(v)) {
+        transfer.push(v.buffer);
+      } else if(Array.isArray(v)) {
+        v.forEach(push);
+      }
+    };
+    (args as any[]).forEach(push);
 
     const sendPortIndex = method === 'aes-encrypt' || method === 'aes-decrypt' ?
       this.lastIndex = (this.lastIndex + 1) % this.sendPorts.length :

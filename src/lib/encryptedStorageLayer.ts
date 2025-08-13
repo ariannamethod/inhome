@@ -74,8 +74,7 @@ export default class EncryptedStorageLayer<T extends Database<any>> implements S
       args: [{
         key,
         data: dataAsBuffer
-      }],
-      transfer: [dataAsBuffer.buffer]
+      }]
     });
 
     return result;
@@ -89,8 +88,7 @@ export default class EncryptedStorageLayer<T extends Database<any>> implements S
       args: [{
         key,
         encryptedData: data
-      }],
-      transfer: [data.buffer]
+      }]
     });
 
     const decoded = new TextDecoder().decode(result);

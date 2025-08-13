@@ -83,8 +83,7 @@ export default class CacheStorageController implements FileStorage {
       args: [{
         key,
         data: dataAsBuffer
-      }],
-      transfer: [dataAsBuffer.buffer]
+      }]
     });
     console.log('[my-debug] encryption ended');
 
@@ -104,8 +103,7 @@ export default class CacheStorageController implements FileStorage {
       args: [{
         key,
         encryptedData: dataAsBuffer
-      }],
-      transfer: [dataAsBuffer.buffer]
+      }]
     });
 
     console.log('[my-debug] decryption ended');
