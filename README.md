@@ -54,13 +54,16 @@ This will install all the needed dependencies.
 
 
 #### Running web-server
-Just run `pnpm start` to start the web server and the livereload task.
-Open http://localhost:8080/ in your browser.
+The server listens on the port specified by the `PORT` environment variable (default `8080`).
+Run `pnpm start` to start the web server and the livereload task.
+Open `http://localhost:$PORT/` in your browser (for example `http://localhost:8080/`).
 
 
 #### Running in production
 
-Run `node build` to build the minimized production version of the app. Copy `public` folder contents to your web server.
+Run `pnpm run serve` to build the minimized production version of the app and start the server.
+Set a custom port by defining the `PORT` environment variable, e.g. `PORT=3000 pnpm run serve`.
+Copy `public` folder contents to your web server if deploying separately.
 
 
 ### Dependencies
