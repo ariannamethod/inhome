@@ -9,10 +9,12 @@ const cors = require('cors');
 
 const app = express();
 
-const whitelist = [
-  'https://web.telegram.org',
-  'https://t.me'
-];
+const whitelist = process.env.CORS_WHITELIST
+  ? process.env.CORS_WHITELIST.split(',').map((origin) => origin.trim())
+  : [
+      'https://web.telegram.org',
+      'https://t.me'
+    ];
 
 app.use(helmet());
 app.use(
@@ -34,10 +36,17 @@ app.use(
       if (!origin || whitelist.includes(origin)) {
         return callback(null, true);
       }
-      return callback(new Error('Not allowed by CORS'));
+      return callback(new Error('Origin not allowed by CORS'));
     }
   })
 );
+
+app.use((err, req, res, next) => {
+  if (err.message === 'Origin not allowed by CORS') {
+    return res.status(403).json({ message: 'CORS: origin not allowed' });
+  }
+  next(err);
+});
 
 const thirdTour = process.argv[2] == 3;
 const forcePort = process.argv[3];
