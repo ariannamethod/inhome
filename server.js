@@ -63,13 +63,28 @@ const port = forcePort ? +forcePort : (+process.env.PORT || (thirdTour ? 8443 : 
 app.set('etag', false);
 app.use((req, res, next) => {
   const ext = path.extname(req.path).toLowerCase();
-  const cacheableExtensions = ['.js', '.css', '.png', '.jpg'];
+  const cacheableExtensions = [
+    '.js',
+    '.css',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.svg',
+    '.webp',
+    '.ico',
+    '.woff',
+    '.woff2',
+    '.ttf',
+    '.otf',
+    '.wasm'
+  ];
   if (cacheableExtensions.includes(ext)) {
     const filename = path.basename(req.path, ext);
     const hasHash = /[.-][0-9a-f]{8,}$/i.test(filename);
     res.set(
       'Cache-Control',
-      hasHash ? 'public, max-age=31536000, immutable' : 'no-store'
+      hasHash ? 'public, max-age=31536000, immutable' : 'public, max-age=300'
     );
   } else {
     res.set('Cache-Control', 'no-store');
