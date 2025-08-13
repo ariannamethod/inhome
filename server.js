@@ -21,7 +21,17 @@ if (whitelist.length === 0) {
   console.warn('CORS whitelist is empty; no origins are allowed');
 }
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    referrerPolicy: { policy: 'no-referrer' },
+    crossOriginEmbedderPolicy: false
+  })
+);
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', "interest-cohort=()");
+  next();
+});
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
