@@ -19,8 +19,12 @@ type WeavingCallState = GROUP_CALL_STATE | CALL_STATE | RTMP_STATE;
 
 export class WeavingState {
   public shader: (ctx: CanvasRenderingContext2D, left: number, top: number, right: number, bottom: number) => void;
+  private width: number;
+  private offset: number;
 
   constructor(public type: WeavingCallType, public state: WeavingCallState) {
+    this.width = 0;
+    this.offset = 0;
     this.createGradient();
   }
 
@@ -31,7 +35,14 @@ export class WeavingState {
   }
 
   update(height: number, width: number, dt: number, amplitude: number) {
-    // TODO: move gradient here
+    this.width = width;
+    this.offset = (this.offset + dt * 0.05) % (width * 2);
+
+    this.shader = (ctx, left, top, right, bottom) => {
+      const startX = left - this.width + this.offset;
+      const endX = right + this.offset;
+      ctx.fillStyle = WeavingState.getGradientFromType(ctx, this.type, this.state, startX, top, endX, bottom);
+    };
   }
 
   public static createStates(type: WeavingCallType, states: WeavingCallState[]) {
