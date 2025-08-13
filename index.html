@@ -16,7 +16,7 @@
     <meta name="theme-color" content="#ffffff">
     <meta name="color-scheme" content="light">
     <meta name="google" content="notranslate">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self';" />
     <!-- <meta name="robots" content="noindex"> -->
 
     <!-- Open Graph / Facebook -->
@@ -42,12 +42,13 @@
     <link rel="canonical" href="{{origin}}">
 
     <link rel="manifest" id="manifest">
+    <link rel="stylesheet" href="public/inline.css">
   </head>
   <body class="animation-level-2 has-auth-pages">
     <!--[if IE]>
       <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
     <![endif]-->
-    <svg style="position: absolute; top: -10000px; left: -10000px;">
+    <svg id="svg-sprite">
       <defs id="svg-defs">
         <clipPath id="tooltip-notch-clip">
           <path d="M19 7C16.8992 7 13.59 3.88897 11.5003 1.67424C10.7648 0.894688 10.397 0.50491 10.0434 0.385149C9.70568 0.270811 9.4225 0.270474 9.08456 0.38401C8.73059 0.50293 8.36133 0.892443 7.62279 1.67147C5.52303 3.88637 2.18302 7 0 7L19 7Z" />
@@ -102,8 +103,8 @@
         </linearGradient> -->
       </defs>
     </svg>
-    <div class="whole" id="auth-pages" style="display: none;">
-      <div id="auth-pages-close" style="display: none;"></div>
+    <div class="whole" id="auth-pages">
+      <div id="auth-pages-close"></div>
       <div class="scrollable scrollable-y">
         <div class="tabs-container auth-pages__container" data-animation="tabs">
           <div class="tabs-tab page-signImport">
@@ -141,7 +142,7 @@
       </div>
     </div>
     <div class="sidebar-left-overlay"></div>
-    <div class="whole page-chats" style="display: none;" id="page-chats">
+    <div class="whole page-chats" id="page-chats">
       <div id="main-columns" class="tabs-container" data-animation="navigation">
         <div class="folders-sidebar sidebar-left-common" id="folders-sidebar"></div>
         <div class="sidebar-left-placeholder"></div>
