@@ -14,7 +14,13 @@ fs.rmSync(logsPath, {force: true, recursive: true});
 fs.mkdirSync(logsPath);
 
 const processChangelog = (fileName) => {
-  const text = fs.readFileSync('./' + fileName).toString('utf-8');
+  let text;
+  try {
+    text = fs.readFileSync('./' + fileName).toString('utf-8');
+  } catch (err) {
+    console.error(`Failed to read file ${fileName}:`, err.message);
+    process.exit(1);
+  }
 
   const lang = (fileName.split('_')[1] || 'en').split('.')[0];
   const writeTo = `${logsPath}${lang}_{VERSION}.md`;

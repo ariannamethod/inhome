@@ -1,7 +1,13 @@
 // @ts-check
 const fs = require('fs');
 
-const data = fs.readFileSync(__dirname + '/in/emoji_test.txt').toString();
+let data;
+try {
+  data = fs.readFileSync(__dirname + '/in/emoji_test.txt').toString();
+} catch (err) {
+  console.error('Failed to read emoji_test.txt:', err.message);
+  process.exit(1);
+}
 
 /** @type {number[][]} */
 const codepoints = [];

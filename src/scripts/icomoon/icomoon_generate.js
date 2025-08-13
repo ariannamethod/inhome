@@ -14,7 +14,13 @@ function moveFiles(outPath) {
   const stylesOutPath = path.join(__dirname, '../../scss/tgico/_');
   const tsOutPath = path.join(__dirname, '../../icons.ts');
 
-  let styleText = fs.readFileSync(outPath + 'style.scss').toString();
+  let styleText;
+  try {
+    styleText = fs.readFileSync(outPath + 'style.scss').toString();
+  } catch (err) {
+    console.error('Failed to read style.scss:', err.message);
+    process.exit(1);
+  }
   styleText = styleText
   .replace(/icomoon/g, 'tgico')
   // .replace('.tgico {', '.tgico:before {')
@@ -34,7 +40,13 @@ function moveFiles(outPath) {
   styleText = styleText.slice(0, idx + p.length) + '\n';
   fs.writeFileSync(stylesOutPath + 'style.scss', styleText);
 
-  let variablesText = fs.readFileSync(outPath + 'variables.scss').toString();
+  let variablesText;
+  try {
+    variablesText = fs.readFileSync(outPath + 'variables.scss').toString();
+  } catch (err) {
+    console.error('Failed to read variables.scss:', err.message);
+    process.exit(1);
+  }
   variablesText = variablesText.slice(variablesText.indexOf('\n\n') + 2);
   const variables = variablesText.split('\n');
   const jsVariables = {}, o = [];

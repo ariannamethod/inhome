@@ -20,8 +20,14 @@ https.get('https://translations.telegram.org/en/webk/export', (response) => {
 
     ['lang', 'langSign'].forEach((part) => {
       const path = `../${part}.ts`;
-    
-      let lang = fs.readFileSync(path).toString();
+
+      let lang;
+      try {
+        lang = fs.readFileSync(path).toString();
+      } catch (err) {
+        console.error(`Failed to read file ${path}:`, err.message);
+        process.exit(1);
+      }
 
       const plural = {};
       data.split('\n').forEach((line) => {

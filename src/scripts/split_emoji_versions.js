@@ -2,7 +2,13 @@
 const fs = require('fs');
 
 // get emoji-test from here: https://unicode.org/Public/emoji/
-const data = fs.readFileSync(__dirname + '/in/emoji-test.txt').toString();
+let data;
+try {
+  data = fs.readFileSync(__dirname + '/in/emoji-test.txt').toString();
+} catch (err) {
+  console.error('Failed to read emoji-test.txt:', err.message);
+  process.exit(1);
+}
 
 const versions = {};
 data.split('\n').forEach((line) => {

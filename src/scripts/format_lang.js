@@ -18,13 +18,19 @@ let out = '';
 ['lang', 'langSign'].forEach(part => {
   const path = `../${part}.ts`;
 
-  let str = fs.readFileSync(path).toString()
-  .replace(/\s+\/\/.+/g, '')
-  // .replace(/\\'/g, '')
-  .replace(/"/g, `\\"`)
-  // .replace(/'/g, '"')
-  .replace(/([^\\])'/g, '$1"')
-  .replace(/\\'/g, '\'')
+  let str;
+  try {
+    str = fs.readFileSync(path).toString()
+    .replace(/\s+\/\/.+/g, '')
+    // .replace(/\\'/g, '')
+    .replace(/"/g, `\\"`)
+    // .replace(/'/g, '"')
+    .replace(/([^\\])'/g, '$1"')
+    .replace(/\\'/g, '\'');
+  } catch (err) {
+    console.error(`Failed to read file ${path}:`, err.message);
+    process.exit(1);
+  }
   // .replace(/"(.+?)(?:")(.*?)"/g, '"$1\"$2"');
   {
     const pattern = '= {';
