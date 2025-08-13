@@ -130,7 +130,7 @@ const onFirstMount = async() => {
           await rootScope.managers.apiManager.setUser(response.user);
 
           sendAvatar().finally(() => {
-            import('./pageIm').then((m) => {
+            import('./pageGroupSelect').then((m) => {
               m.default.mount();
             });
           });

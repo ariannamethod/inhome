@@ -53,7 +53,7 @@ const submitCode = (code: string) => {
       case 'auth.authorization':
         await rootScope.managers.apiManager.setUser(response.user);
 
-        import('./pageIm').then((m) => {
+        import('./pageGroupSelect').then((m) => {
           m.default.mount();
         });
         cleanup();

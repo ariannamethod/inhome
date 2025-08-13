@@ -98,7 +98,7 @@ const onFirstMount = async() => {
       if(loginToken._ === 'auth.loginTokenSuccess') {
         const authorization = loginToken.authorization as any as AuthAuthorization.authAuthorization;
         await rootScope.managers.apiManager.setUser(authorization.user);
-        import('./pageIm').then((m) => m.default.mount());
+        import('./pageGroupSelect').then((m) => m.default.mount());
         return true;
       }
 

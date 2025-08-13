@@ -144,7 +144,7 @@ const onFirstMount = () => {
         if(authorization._ === 'auth.authorization') {
           await rootScope.managers.apiManager.setUser(authorization.user);
 
-          import('./pageIm').then((m) => {
+          import('./pageGroupSelect').then((m) => {
             m.default.mount();
           });
         }
