@@ -34,4 +34,3 @@ jobs:
 
       - name: Audit
         run: pnpm audit --prod
-        continue-on-error: true
