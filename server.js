@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
+const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 
@@ -57,8 +58,15 @@ const port = forcePort ? +forcePort : (+process.env.PORT || (thirdTour ? 8443 : 
 
 app.set('etag', false);
 app.use((req, res, next) => {
-  if(req.path.endsWith('.svg')) {
-    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  const ext = path.extname(req.path).toLowerCase();
+  const cacheableExtensions = ['.js', '.css', '.png', '.jpg'];
+  if (cacheableExtensions.includes(ext)) {
+    const filename = path.basename(req.path, ext);
+    const hasHash = /[.-][0-9a-f]{8,}$/i.test(filename);
+    res.set(
+      'Cache-Control',
+      hasHash ? 'public, max-age=31536000, immutable' : 'no-store'
+    );
   } else {
     res.set('Cache-Control', 'no-store');
   }
