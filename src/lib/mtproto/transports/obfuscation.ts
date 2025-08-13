@@ -159,8 +159,7 @@ export default class Obfuscation {
   private _process = (data: Uint8Array, operation: 'encrypt' | 'decrypt') => {
     return cryptoMessagePort.invokeCryptoNew({
       method: 'aes-ctr-process',
-      args: [{id: this.id, data, operation}],
-      transfer: [data.buffer]
+      args: [{id: this.id, data, operation}]
     }) as Promise<Uint8Array>;
   };
 
