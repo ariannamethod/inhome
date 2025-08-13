@@ -52,6 +52,13 @@ pnpm install
 ```
 This will install all the needed dependencies.
 
+#### Updating MTProto schema
+You can update the MTProto schema with `node schema.js`:
+
+* **macOS**: `node schema.js 1` reads the schema from the clipboard using `pbpaste`.
+* **Linux**: `node schema.js 1` reads the schema from the clipboard using `xclip -selection clipboard -o`. If no clipboard tool is available, provide a file path instead: `node schema.js path/to/schema.json`.
+* **Windows**: `node schema.js 1` reads the schema from the clipboard using PowerShell's `Get-Clipboard`. You can also supply a file path: `node schema.js path\\to\\schema.json`.
+
 
 #### Running web-server
 The server listens on the port specified by the `PORT` environment variable (default `8080`).
