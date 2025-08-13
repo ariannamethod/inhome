@@ -8,6 +8,9 @@ const {streamObject} = require('stream-json/streamers/StreamObject');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+const API_KEY = process.env.API_KEY;
+const SESSION_TOKEN = process.env.SESSION_TOKEN;
+const MAX_PAYLOAD_SIZE = process.env.MAX_PAYLOAD_SIZE || '5mb';
 const SNAPSHOT_DIR = path.join(__dirname, 'snapshots');
 
 // Ensure snapshot folder exists
@@ -17,7 +20,24 @@ if(!fs.existsSync(SNAPSHOT_DIR)) {
 
 // app.use(bodyParser.json({limit: '100mb'})); // Accept large JSON payloads
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.text({type: 'text/plain', limit: '100mb'}));
+app.use(express.text({type: 'text/plain', limit: MAX_PAYLOAD_SIZE}));
+
+app.use((err, _req, res, next) => {
+  if(err && err.type === 'entity.too.large') {
+    return res.status(413).json({error: 'Payload too large'});
+  }
+  next(err);
+});
+
+const authenticate = (req, res, next) => {
+  const token = req.get('x-api-key') || req.get('x-session-token');
+  if((API_KEY && token === API_KEY) || (SESSION_TOKEN && token === SESSION_TOKEN)) {
+    return next();
+  }
+  res.status(401).json({error: 'Unauthorized'});
+};
+
+app.use('/api/snapshots', authenticate);
 
 // List all snapshots
 app.get('/api/snapshots', async(req, res) => {
