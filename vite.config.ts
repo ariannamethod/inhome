@@ -70,12 +70,11 @@ export default defineConfig({
     solidPlugin(),
     handlebarsPlugin as any,
     USE_SSL ? (basicSsl as any)(SSL_CONFIG) : undefined,
-    visualizer({
+    process.env.ANALYZE ? visualizer({
       gzipSize: true,
       template: 'treemap',
-      filename: 'stats.html',
-      open: true
-    })
+      filename: 'stats.html'
+    }) : undefined
   ].filter(Boolean),
   test: {
     // include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
