@@ -1032,7 +1032,7 @@ export default class AppSearchSuper {
 
     if(!title.textContent) {
       // title = new URL(webpage.url).hostname;
-      title.append(wrapPlainText(webPage.display_url.split('/', 1)[0]));
+      title.textContent = wrapPlainText(webPage.display_url.split('/', 1)[0]);
     }
 
     const row = new Row({
