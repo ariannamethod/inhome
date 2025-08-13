@@ -2,7 +2,11 @@
  * https://github.com/morethanwords/tweb
  * Copyright (C) 2019-2021 Eduard Kuzmenko
  * https://github.com/morethanwords/tweb/blob/master/LICENSE
- */
+*/
+
+@function safe-z-index($offset: 1) {
+  @return calc(var(--passcode-lock-screen-z-index, 100000) + #{$offset});
+}
 
 .ckin {
   &__player {
@@ -11,7 +15,7 @@
     &.ckin__fullscreen {
       position: fixed;
       inset: 0;
-      z-index: 10000; // TODO: Check if it's big enough
+      z-index: safe-z-index();
       background: #000;
       border-radius: 0 !important;
       display: flex;
