@@ -284,11 +284,11 @@ export default class AppStorage<
 
   private warnAboutSaving() {
     // TODO: Save data only in worker
-    // if(DEBUG && typeof window !== 'undefined' && this.isEncryptable) {
-    //   const message = 'Encryptable storages should not be used in a window client, only in the shared worker. This avoids data mismatches when the lock screen feature is activated';
-    //   this.log.error(message);
-    //   throw new Error(message);
-    // }
+    if(DEBUG && typeof window !== 'undefined' && this.isEncryptable) {
+      const message = 'Encryptable storages should not be used in a window client, only in the shared worker. This avoids data mismatches when the lock screen feature is activated';
+      this.log.error(message);
+      throw new Error(message);
+    }
   }
 
   public set(obj: Partial<Storage>, onlyLocal = false) {
