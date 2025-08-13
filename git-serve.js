@@ -6,48 +6,82 @@ var child = require("child_process"),
     mime = require("mime"),
     path = require("path");
 
-var shaRe = /^[0-9a-f]{40}$/,
-    emailRe = /^<.*@.*>$/;
+var shaRe = /^[0-9a-f]{40}$/, 
+    emailRe = /^<.*@.*>$/,
+    revisionRe = /^[A-Za-z0-9._-]+$/,
+    fileRe = /^[A-Za-z0-9._\/-]+$/;
+
+var BASE_REPOSITORY_DIR = path.resolve(__dirname);
+
+function resolveRepository(repository) {
+  var full = path.resolve(BASE_REPOSITORY_DIR, repository);
+  if (full !== BASE_REPOSITORY_DIR && !full.startsWith(BASE_REPOSITORY_DIR + path.sep)) {
+    throw new Error("invalid repository path");
+  }
+  return full;
+}
+
+function isValidRevision(revision) {
+  return revisionRe.test(revision);
+}
+
+function isValidFile(file) {
+  return fileRe.test(file) && file.split("/").indexOf("..") === -1;
+}
 
 function readBlob(repository, revision, file, callback) {
-  var git = child.spawn("git", ["cat-file", "blob", revision + ":" + file], {cwd: repository}),
-      data = [],
-      exit;
+  var repositoryPath;
+  try {
+    repositoryPath = resolveRepository(repository);
+  } catch (err) {
+    return process.nextTick(function() { callback(err); });
+  }
+  if (!isValidRevision(revision)) return process.nextTick(function() { callback(new Error("invalid revision")); });
+  if (!isValidFile(file)) return process.nextTick(function() { callback(new Error("invalid file")); });
 
-  git.stdout.on("data", function(chunk) {
-    data.push(chunk);
+  child.execFile("git", ["cat-file", "blob", revision + ":" + file], {cwd: repositoryPath, encoding: "buffer"}, function(err, stdout) {
+    if (err) return callback(err);
+    callback(null, Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout));
   });
-
-  git.on("exit", function(code) {
-    exit = code;
-  });
-
-  git.on("close", function() {
-    if (exit > 0) return callback(error(exit));
-    callback(null, Buffer.concat(data));
-  });
-
-  git.stdin.end();
 }
 
 exports.readBlob = readBlob;
 
 exports.getBranches = function(repository, callback) {
-  child.exec("git branch -l", {cwd: repository}, function(error, stdout) {
+  var repositoryPath;
+  try {
+    repositoryPath = resolveRepository(repository);
+  } catch (err) {
+    return callback(err);
+  }
+  child.execFile("git", ["branch", "-l"], {cwd: repositoryPath}, function(error, stdout) {
     if (error) return callback(error);
     callback(null, stdout.split(/\n/).slice(0, -1).map(function(s) { return s.slice(2); }));
   });
 };
 
 exports.getSha = function(repository, revision, callback) {
-  child.exec("git rev-parse '" + revision.replace(/'/g, "'\''") + "'", {cwd: repository}, function(error, stdout) {
+  var repositoryPath;
+  try {
+    repositoryPath = resolveRepository(repository);
+  } catch (err) {
+    return callback(err);
+  }
+  if (!isValidRevision(revision)) return callback(new Error("invalid revision"));
+  child.execFile("git", ["rev-parse", revision], {cwd: repositoryPath}, function(error, stdout) {
     if (error) return callback(error);
     callback(null, stdout.trim());
   });
 };
 
 exports.getBranchCommits = function(repository, callback) {
-  child.exec("git for-each-ref refs/heads/ --sort=-authordate --format='%(objectname)\t%(refname:short)\t%(authordate:iso8601)\t%(authoremail)'", {cwd: repository}, function(error, stdout) {
+  var repositoryPath;
+  try {
+    repositoryPath = resolveRepository(repository);
+  } catch (err) {
+    return callback(err);
+  }
+  child.execFile("git", ["for-each-ref", "refs/heads/", "--sort=-authordate", "--format=%(objectname)\t%(refname:short)\t%(authordate:iso8601)\t%(authoremail)"], {cwd: repositoryPath}, function(error, stdout) {
     if (error) return callback(error);
     callback(null, stdout.split("\n").map(function(line) {
       var fields = line.split("\t"),
@@ -70,9 +104,19 @@ exports.getBranchCommits = function(repository, callback) {
 
 exports.getCommit = function(repository, revision, callback) {
   if (arguments.length < 3) callback = revision, revision = null;
-  child.exec(shaRe.test(revision)
-      ? "git log -1 --date=iso " + revision + " --format='%H\n%ad'"
-      : "git for-each-ref --count 1 --sort=-authordate 'refs/heads/" + (revision ? revision.replace(/'/g, "'\''") : "") + "' --format='%(objectname)\n%(authordate:iso8601)'", {cwd: repository}, function(error, stdout) {
+  var repositoryPath;
+  try {
+    repositoryPath = resolveRepository(repository);
+  } catch (err) {
+    return callback(err);
+  }
+  if (revision && !isValidRevision(revision)) return callback(new Error("invalid revision"));
+
+  var args = shaRe.test(revision)
+      ? ["log", "-1", "--date=iso", revision, "--format=%H\n%ad"]
+      : ["for-each-ref", "--count", "1", "--sort=-authordate", revision ? "refs/heads/" + revision : "refs/heads/", "--format=%(objectname)\n%(authordate:iso8601)"];
+
+  child.execFile("git", args, {cwd: repositoryPath}, function(error, stdout) {
     if (error) return callback(error);
     var lines = stdout.split("\n"),
         sha = lines[0],
@@ -87,7 +131,14 @@ exports.getCommit = function(repository, revision, callback) {
 
 exports.getRelatedCommits = function(repository, branch, sha, callback) {
   if (!shaRe.test(sha)) return callback(new Error("invalid SHA: " + sha));
-  child.exec("git log --format='%H' '" + branch.replace(/'/g, "'\''") + "' | grep -C1 " + sha, {cwd: repository}, function(error, stdout) {
+  var repositoryPath;
+  try {
+    repositoryPath = resolveRepository(repository);
+  } catch (err) {
+    return callback(err);
+  }
+  if (!isValidRevision(branch)) return callback(new Error("invalid revision"));
+  child.execFile("git", ["log", "--format=%H", branch], {cwd: repositoryPath}, function(error, stdout) {
     if (error) return callback(error);
     var shas = stdout.split(/\n/),
         i = shas.indexOf(sha);
@@ -102,7 +153,13 @@ exports.getRelatedCommits = function(repository, branch, sha, callback) {
 exports.listCommits = function(repository, sha1, sha2, callback) {
   if (!shaRe.test(sha1)) return callback(new Error("invalid SHA: " + sha1));
   if (!shaRe.test(sha2)) return callback(new Error("invalid SHA: " + sha2));
-  child.exec("git log --format='%H\t%ad' " + sha1 + ".." + sha2, {cwd: repository}, function(error, stdout) {
+  var repositoryPath;
+  try {
+    repositoryPath = resolveRepository(repository);
+  } catch (err) {
+    return callback(err);
+  }
+  child.execFile("git", ["log", "--format=%H\t%ad", sha1 + ".." + sha2], {cwd: repositoryPath}, function(error, stdout) {
     if (error) return callback(error);
     callback(null, stdout.split(/\n/).slice(0, -1).map(function(commit) {
       var fields = commit.split(/\t/);
@@ -116,7 +173,13 @@ exports.listCommits = function(repository, sha1, sha2, callback) {
 
 /** @type {(repository: string, callback: (err: Error, commits?: {sha: string, date: Date, author: string, subject: string}[]) => void) => void} */
 exports.listAllCommits = function(repository, callback) {
-  child.exec("git log --branches --format='%H\t%ad\t%an\t%s'", {cwd: repository}, function(error, stdout) {
+  var repositoryPath;
+  try {
+    repositoryPath = resolveRepository(repository);
+  } catch (err) {
+    return callback(err);
+  }
+  child.execFile("git", ["log", "--branches", "--format=%H\t%ad\t%an\t%s"], {cwd: repositoryPath}, function(error, stdout) {
     if (error) return callback(error);
     callback(null, stdout.split(/\n/).slice(0, -1).map(function(commit) {
       var fields = commit.split(/\t/);
@@ -131,7 +194,14 @@ exports.listAllCommits = function(repository, callback) {
 };
 
 exports.listTree = function(repository, revision, callback) {
-  child.exec("git ls-tree -r " + revision, {cwd: repository}, function(error, stdout) {
+  var repositoryPath;
+  try {
+    repositoryPath = resolveRepository(repository);
+  } catch (err) {
+    return callback(err);
+  }
+  if (!isValidRevision(revision)) return callback(new Error("invalid revision"));
+  child.execFile("git", ["ls-tree", "-r", revision], {cwd: repositoryPath}, function(error, stdout) {
     if (error) return callback(error);
     callback(null, stdout.split(/\n/).slice(0, -1).map(function(commit) {
       var fields = commit.split(/\t/);
