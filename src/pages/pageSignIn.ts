@@ -27,6 +27,7 @@ import CountryInputField from '../components/countryInputField';
 import {getCurrentAccount} from '../lib/accounts/getCurrentAccount';
 import AccountController from '../lib/accounts/accountController';
 import commonStateStorage from '../lib/commonStateStorage';
+import InputField from '../components/inputField';
 
 // import _countries from '../countries_pretty.json';
 let btnNext: HTMLButtonElement = null, btnQr: HTMLButtonElement;
@@ -100,6 +101,21 @@ const onFirstMount = () => {
 
   const telEl = telInputField.input;
 
+  const groupInputField = new InputField({
+    label: 'Group ID',
+    plainText: true
+  });
+  const groupEl = groupInputField.input as HTMLInputElement;
+  const groupList = document.createElement('datalist');
+  groupList.id = 'groups-list';
+  groupEl.setAttribute('list', groupList.id);
+  ['ExampleGroup1', 'ExampleGroup2'].forEach((name) => {
+    const option = document.createElement('option');
+    option.value = name;
+    groupList.append(option);
+  });
+  groupInputField.container.append(groupList);
+
   telEl.addEventListener('keypress', (e) => {
     // console.log('keypress', this.value);
     if(!btnNext.style.visibility &&/* this.value.length >= 9 && */ e.key === 'Enter') {
@@ -119,12 +135,17 @@ const onFirstMount = () => {
       cancelEvent(e);
     }
 
+    const groupId = groupInputField.value.trim();
+    if(!groupId) {
+      groupEl.classList.add('error');
+      return;
+    }
+    sessionStorage.setItem('group_id', groupId);
+
     const toggle = toggleDisability([/* telEl, countryInput,  */btnNext, btnQr], true);
 
     replaceContent(btnNext, i18n('PleaseWait'));
     putPreloader(btnNext);
-
-    // return;
 
     const phone_number = telInputField.value;
     rootScope.managers.apiManager.invokeApi('auth.sendCode', {
