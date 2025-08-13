@@ -33,73 +33,70 @@ export default function renderImageFromUrl(
   }
 
   const isVideo = elem instanceof HTMLVideoElement;
-  if(((loadedURLs[url]/*  && false */) && useCache) || isVideo) {
-    /* if(isVideo) {
-      const source = document.createElement('source');
-      source.src = url;
-      source.type = 'video/webm';
-      elem.append(source);
-    } else  */if(elem) {
-      set(elem, url);
-    }
-
+  if(isVideo) {
+    set(elem, url);
     if(callback) {
-      if(isVideo) {
-        return onMediaLoad(elem).then(callback);
-      } else {
-        callback?.();
-      }
-      // callback && getHeavyAnimationPromise().then(() => callback());
+      return onMediaLoad(elem).then(callback);
     }
-  } else {
-    const isImage = elem instanceof HTMLImageElement;
-    const loader = isImage ? elem : new Image();
-    // const loader = new Image();
-    // let perf = performance.now();
-
-    const onLoad = () => {
-      if(!isImage && elem) {
-        set(elem, url);
-      }
-
-      loadedURLs[url] = true;
-      // console.log('onload:', url, performance.now(), loader.naturalWidth, loader.naturalHeight);
-      processImageOnLoad?.(loader);
-      // TODO: переделать прогрузки аватаров до начала анимации, иначе с этим ожиданием они неприятно появляются
-      // callback && getHeavyAnimationPromise().then(() => callback());
-      callback?.();
-
-      // if(loader.naturalWidth) {
-      //   const interval = setInterval(() => {
-      //     if(!loader.naturalWidth) {
-      //       const parents = getParents(loader);
-      //       console.warn('image no dimensions', loader.isConnected, parents, (parents[parents.length - 1] as HTMLElement).outerHTML, loader.src === url);
-      //     }
-      //   }, 1);
-
-      //   setTimeout(() => clearInterval(interval), 1e3);
-      // }
-    };
-
-    const onError = (err: DOMException) => {
-      if(!err.message.includes('cannot be decoded')) {
-        console.error('Render image from url failed:', err, url, loader, err.message, loader.naturalWidth);
-      }
-
-      callback?.();
-    };
-
-    loader.decoding = 'async';
-    loader.src = url;
-    return loader.decode().then(onLoad, onError);
-    // const timeout = setTimeout(() => {
-    //   console.error('not yet decoded', loader, url);
-    //   debugger;
-    // }, 1e3);
-    // decodePromise.finally(() => {
-    //   clearTimeout(timeout);
-    // });
+    return;
   }
+
+  const prevTransition = elem.style.transition;
+  const prevOpacity = elem.style.opacity;
+  elem.style.transition = 'opacity .15s';
+  elem.style.opacity = '0';
+
+  const cleanup = () => {
+    elem.style.transition = prevTransition;
+    elem.style.opacity = prevOpacity;
+  };
+
+  if(loadedURLs[url] && useCache) {
+    set(elem, url);
+    requestAnimationFrame(() => {
+      elem.style.opacity = prevOpacity || '';
+      elem.addEventListener('transitionend', cleanup, {once: true});
+    });
+
+    callback?.();
+    return;
+  }
+
+  const loader = new Image();
+
+  const onLoad = () => {
+    set(elem, url);
+
+    loadedURLs[url] = true;
+    processImageOnLoad?.(loader);
+
+    requestAnimationFrame(() => {
+      elem.style.opacity = prevOpacity || '';
+      elem.addEventListener('transitionend', cleanup, {once: true});
+    });
+
+    callback?.();
+  };
+
+  const onError = (err: DOMException) => {
+    if(!err.message.includes('cannot be decoded')) {
+      console.error('Render image from url failed:', err, url, loader, err.message, loader.naturalWidth);
+    }
+
+    cleanup();
+    callback?.();
+  };
+
+  loader.decoding = 'async';
+  loader.src = url;
+  return loader.decode().then(onLoad, onError);
+  // const timeout = setTimeout(() => {
+  //   console.error('not yet decoded', loader, url);
+  //   debugger;
+  // }, 1e3);
+  // decodePromise.finally(() => {
+  //   clearTimeout(timeout);
+  // });
 }
 
 export function renderImageFromUrlPromise(
