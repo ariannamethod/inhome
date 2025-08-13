@@ -50,9 +50,10 @@ import flatten from '../../../helpers/array/flatten';
 import SuperStickerRenderer from './SuperStickerRenderer';
 import StickersTab from './stickers';
 import {PAID_REACTION_EMOJI_DOCID} from '../../../lib/customEmoji/constants';
+import LRUCache from '../../../helpers/lruCache';
 
-
-const loadedURLs: Set<string> = new Set();
+const loadedURLs = new LRUCache<string, true>(100);
+export const purgeLoadedEmojiUrl = (url: string) => loadedURLs.delete(url);
 export function appendEmoji(_emoji: AppEmoji, unify = false) {
   if(_emoji.docId) {
     const customEmojiElement = CustomEmojiElement.create(_emoji.docId);
@@ -107,7 +108,7 @@ export function appendEmoji(_emoji: AppEmoji, unify = false) {
 
           spanEmoji.classList.remove('empty');
 
-          loadedURLs.add(url);
+          loadedURLs.set(url, true);
         });
       }, {once: true});
 
