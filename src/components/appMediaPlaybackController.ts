@@ -404,6 +404,14 @@ export class AppMediaPlaybackController extends EventListenerBase<{
         }, {once: true});
       }, {once: true});
     }/* , {once: true} */);
+
+    media.addEventListener('ended', () => {
+      const currentTime = 0;
+      setCurrentTime(media, media.duration - 1);
+      media.addEventListener('progress', () => {
+        setCurrentTime(media, currentTime);
+      }, {once: true});
+    });
   }
 
   public resolveWaitingForLoadMedia(peerId: PeerId, mid: number, isScheduled?: boolean) {
@@ -421,6 +429,24 @@ export class AppMediaPlaybackController extends EventListenerBase<{
       if(!storage.size) {
         w.delete(peerId);
       }
+    }
+  }
+
+  private async ensureMediaSourceReady(media: HTMLMediaElement) {
+    const details = this.mediaDetails.get(media);
+    if(!details) {
+      return;
+    }
+    const cacheContext: any = apiManagerProxy.getCacheContext(details.doc);
+    const mediaSource: MediaSource | undefined = cacheContext?.mediaSource;
+    if(mediaSource && mediaSource.readyState !== 'open') {
+      await new Promise<void>((resolve) => {
+        if(mediaSource.readyState === 'open') {
+          resolve();
+        } else {
+          mediaSource.addEventListener('sourceopen', () => resolve(), {once: true});
+        }
+      });
     }
   }
 
@@ -764,7 +790,7 @@ export class AppMediaPlaybackController extends EventListenerBase<{
     return true;
   };
 
-  public playItem = (item: MediaItem) => {
+  public playItem = async(item: MediaItem) => {
     const {peerId, mid} = item;
     const isScheduled = this.searchContext.isScheduled;
     const media = this.getMedia(peerId, mid, isScheduled);
@@ -773,6 +799,7 @@ export class AppMediaPlaybackController extends EventListenerBase<{
       media.autoplay = true;
     } */
 
+    await this.ensureMediaSourceReady(media);
     media.play();
 
     setTimeout(() => {
