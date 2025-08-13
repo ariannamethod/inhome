@@ -310,6 +310,9 @@ export type InputFieldOptions = {
   labelOptions?: any[],
   labelText?: string | DocumentFragment,
   name?: string,
+  id?: string,
+  ariaLabel?: string,
+  ariaDescribedBy?: string,
   maxLength?: number,
   showLengthOn?: number,
   plainText?: true,
@@ -390,6 +393,7 @@ function processCustomEmojisInInput(input: HTMLElement) {
 }
 
 export default class InputField {
+  private static idCounter = 0;
   public container: HTMLElement;
   public input: HTMLElement;
   public label: HTMLLabelElement;
@@ -415,6 +419,7 @@ export default class InputField {
 
     const {placeholder, maxLength, showLengthOn, name, plainText, canBeEdited = true, autocomplete, withBorder, allowStartingSpace, canHaveFormatting} = options;
     const label = options.label || options.labelText;
+    const id = options.id || `input-field-${++InputField.idCounter}`;
     this.allowStartingSpace = allowStartingSpace;
 
     const onInputCallbacks: Array<() => void> = [];
@@ -551,6 +556,9 @@ export default class InputField {
       // }
     }
 
+    input.id = id;
+    input.setAttribute('aria-invalid', 'false');
+
     if(withBorder !== false && withBorder || label || placeholder) {
       const border = document.createElement('div');
       border.classList.add('input-field-border');
@@ -559,8 +567,26 @@ export default class InputField {
 
     if(label != null) {
       this.label = document.createElement('label');
+      this.label.id = `${id}-label`;
+      this.label.setAttribute('for', id);
+      this.label.setAttribute('aria-live', 'polite');
       this.setLabel();
       this.container.append(this.label);
+      input.setAttribute('aria-describedby', options.ariaDescribedBy || this.label.id);
+    } else if(options.ariaDescribedBy) {
+      input.setAttribute('aria-describedby', options.ariaDescribedBy);
+    }
+
+    let ariaLabel = options.ariaLabel;
+    if(!ariaLabel) {
+      if(this.label) {
+        ariaLabel = this.label.textContent;
+      } else if(placeholder) {
+        ariaLabel = i18n(placeholder).textContent;
+      }
+    }
+    if(ariaLabel) {
+      input.setAttribute('aria-label', ariaLabel);
     }
 
     if(maxLength) {
@@ -715,8 +741,10 @@ export default class InputField {
       this.setLabel();
     }
 
-    this.input.classList.toggle('error', !!(state & InputState.Error));
+    const isError = !!(state & InputState.Error);
+    this.input.classList.toggle('error', isError);
     this.input.classList.toggle('valid', !!(state & InputState.Valid));
+    this.input.setAttribute('aria-invalid', isError ? 'true' : 'false');
   }
 
   public setError(label?: LangPackKey) {

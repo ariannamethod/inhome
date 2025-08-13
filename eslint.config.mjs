@@ -5,6 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import js from '@eslint/js';
 import {FlatCompat} from '@eslint/eslintrc';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,7 +24,8 @@ export default [{
   ]
 }, ...compat.extends(), {
   plugins: {
-    '@typescript-eslint': typescriptEslint
+    '@typescript-eslint': typescriptEslint,
+    'jsx-a11y': jsxA11y
   },
 
   languageOptions: {
@@ -41,6 +43,7 @@ export default [{
   },
 
   rules: {
+    'jsx-a11y/aria-role': 'warn',
     'max-len': 'off',
 
     'keyword-spacing': ['error', {
