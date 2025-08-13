@@ -70,6 +70,11 @@ Open `http://localhost:$PORT/` in your browser (for example `http://localhost:80
 
 Run `pnpm run serve` to build the minimized production version of the app and start the server.
 Set a custom port by defining the `PORT` environment variable, e.g. `PORT=3000 pnpm run serve`.
+Specify allowed cross-origin requests with the `CORS_WHITELIST` environment variable. Multiple origins can be comma-separated:
+
+```
+CORS_WHITELIST="https://example.com,https://another.com" pnpm run serve
+```
 Copy `public` folder contents to your web server if deploying separately.
 
 
