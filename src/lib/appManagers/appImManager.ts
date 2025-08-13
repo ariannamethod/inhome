@@ -2372,7 +2372,7 @@ export class AppImManager extends EventListenerBase<{
 
   public async toggleViewAsMessages(peerId: PeerId, enabled: boolean) {
     if(peerId === rootScope.myId) {
-      setAppState('settings', 'savedAsForum', !enabled);
+      setAppState('settings', {savedAsForum: !enabled});
     } else {
       await this.managers.appChatsManager.toggleViewForumAsMessages(peerId.toChatId(), enabled);
     }
