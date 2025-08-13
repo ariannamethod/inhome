@@ -4,7 +4,7 @@
  * https://github.com/morethanwords/tweb/blob/master/LICENSE
  */
 
-import type lang from '../lang';
+import type lang from '../lang/en';
 import type langSign from '../langSign';
 import type {State} from '../config/state';
 import DEBUG, {MOUNT_CLASS_TO} from '../config/debug';
@@ -101,6 +101,9 @@ namespace I18n {
     lastRequestedLangCode = langCode;
     lastRequestedNormalizedLangCode = langCode.split('-')[0];
     setLangCodeNormalized(lastRequestedNormalizedLangCode.split('-')[0] as any);
+    if(typeof localStorage !== 'undefined') {
+      localStorage.setItem('language', langCode);
+    }
   }
 
   export function getCacheLangPack(): Promise<LangPackDifference> {
@@ -167,11 +170,20 @@ namespace I18n {
     }
   }
 
+  const localLangs = import.meta.glob('../lang/*.ts');
+  function importLocalLang(code: string) {
+    const path = `../lang/${code}.ts`;
+    const importer = (localLangs as any)[path] || (localLangs as any)['../lang/en.ts'];
+    return importer();
+  }
+
   export function loadLocalLangPack() {
-    const defaultCode = App.langPackCode;
+    const cached = typeof localStorage !== 'undefined' ? localStorage.getItem('language') : undefined;
+    const browser = typeof navigator !== 'undefined' ? navigator.language : undefined;
+    const defaultCode = (cached || browser || App.langPackCode).split('-')[0];
     setLangCode(defaultCode);
     return Promise.all([
-      import('../lang'),
+      importLocalLang(defaultCode),
       import('../langSign'),
       import('../countries')
     ]).then(([lang, langSign, countries]) => {
@@ -205,7 +217,7 @@ namespace I18n {
         lang_code: langCode,
         lang_pack: 'android'
       }),
-      import('../lang'),
+      importLocalLang(langCode),
       import('../langSign'),
       managers.apiManager.invokeApiCacheable('help.getCountriesList', {
         lang_code: langCode,
