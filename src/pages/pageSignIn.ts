@@ -10,7 +10,6 @@ import Button from '../components/button';
 import IS_TOUCH_SUPPORTED from '../environment/touchSupport';
 import App from '../config/app';
 import I18n, {_i18n, i18n} from '../lib/langPack';
-import lottieLoader from '../lib/rlottie/lottieLoader';
 import ripple from '../components/ripple';
 import pageSignQR from './pageSignQR';
 import getLanguageChangeButton from '../components/languageChangeButton';
@@ -73,7 +72,9 @@ const onFirstMount = () => {
 
   const telInputField = new TelInputField({
     onInput: (formatted) => {
-      lottieLoader.loadLottieWorkers();
+      import('../lib/rlottie/lottieLoader').then(({default: lottieLoader}) => {
+        lottieLoader.loadLottieWorkers();
+      });
 
       const {country, code} = formatted || {};
       const countryName = country ? country.name || country.default_name : ''/* 'Unknown' */;
