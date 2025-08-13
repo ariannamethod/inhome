@@ -647,7 +647,11 @@ export default function wrapRichText(text: string, options: WrapRichTextOptions 
 
           if(!IS_FIREFOX) { // Firefox has very poor performance when drawing on canvas
             element = document.createElement('span');
-            element.append(...partText.split('').map((encodedLetter, i) => createElementFromMarkup(`<span class="bluff-spoiler" style="--index:${i}">${encodedLetter}</span>`)))
+            element.append(
+              ...partText.split('').map((encodedLetter, i) =>
+                createElementFromMarkup(`<span class="bluff-spoiler" style="--index:${i}">${encodedLetter}</span>`, true)
+              )
+            )
             fragment.append(element);
 
             DotRenderer.attachBluffTextSpoilerTarget(element);

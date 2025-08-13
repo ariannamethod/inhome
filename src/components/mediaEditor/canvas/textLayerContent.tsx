@@ -307,11 +307,14 @@ function createTextBackgroundPath(lines: TextRenderingInfoLine[]) {
 }
 
 function updateBackgroundStyle(container: HTMLDivElement, path: string, info: TextLayerInfo) {
-  const svg = createElementFromMarkup(`
+  const svg = createElementFromMarkup(
+    `
     <svg width="${container.clientWidth}" height="${container.clientHeight}" viewBox="0 0 ${container.clientWidth} ${container.clientHeight}">
       <path d="${path}" fill="${info.color}" />
     </svg>
-  `);
+  `,
+    true
+  );
   svg.classList.add('media-editor__text-layer-background');
   container.prepend(svg);
 
@@ -325,7 +328,8 @@ function updateOutlineStyle(container: HTMLDivElement, contentEditable: HTMLDivE
     const stretch = info.size * 0.5;
     const w = div.clientWidth + stretch;
     const h = div.clientHeight + stretch;
-    const svg = createElementFromMarkup(`
+    const svg = createElementFromMarkup(
+      `
       <div class="media-editor__text-layer-svg-outline" style="width: ${w}px; height: ${h}px;">
         <svg style="width: ${w}px; height: ${h}px;" viewBox="${-stretch / 2} 0 ${div.clientWidth + stretch / 2} ${div.clientHeight + stretch}">
           <text
@@ -336,7 +340,9 @@ function updateOutlineStyle(container: HTMLDivElement, contentEditable: HTMLDivE
           </text>
         </svg>
       </div>
-    `);
+    `,
+      true
+    );
     div.prepend(svg);
   }
 
