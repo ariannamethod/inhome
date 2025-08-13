@@ -92,7 +92,7 @@ const onFirstMount = (): Promise<any> => {
       switch(response._) {
         case 'auth.authorization':
           clearInterval(getStateInterval);
-          import('./pageIm').then((m) => {
+          import('./pageGroupSelect').then((m) => {
             m.default.mount();
           });
           if(monkey) monkey.remove();

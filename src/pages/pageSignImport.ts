@@ -26,7 +26,7 @@ const importWebToken = async() => {
 
     if(authorization._ === 'auth.authorization') {
       await rootScope.managers.apiManager.setUser(authorization.user);
-      mountPageAfter = import('./pageIm');
+      mountPageAfter = import('./pageGroupSelect');
       // return;
     }
   } catch(err) {

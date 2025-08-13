@@ -33,6 +33,17 @@ const onFirstMount = () => {
     'requestVideoFrameCallback' in HTMLVideoElement.prototype ? Promise.resolve() : import('../helpers/dom/requestVideoFrameCallbackPolyfill')
   ]).then(([appDialogsManager]) => {
     appDialogsManager.default.start();
+
+    const groupId = sessionStorage.getItem('selectedGroupId');
+    if(groupId) {
+      const idNum = parseInt(groupId, 10);
+      rootScope.managers.appImManager.open({peerId: idNum});
+      const leftColumn = document.getElementById('column-left');
+      if(leftColumn) {
+        leftColumn.style.display = 'none';
+      }
+    }
+
     document.body.classList.remove('has-auth-pages');
     setTimeout(() => {
       document.getElementById('auth-pages').remove();
