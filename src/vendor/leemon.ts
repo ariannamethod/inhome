@@ -1578,8 +1578,7 @@ export function copy_(x: number[], y: number[]): void {
  */
 export function copyInt_(x: number[], n: number): void {
   var i, c
-  var len = x.length //TODO .length in for loop have perfomance costs. Bench this
-  for (c = n, i = 0; i < len; i++) {
+  for (c = n, i = 0; i < x.length; i++) {
     x[i] = c & mask
     c >>= bpe
   }
