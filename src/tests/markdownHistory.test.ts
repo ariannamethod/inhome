@@ -1,7 +1,7 @@
 import {describe, test, expect, vi} from 'vitest';
 
-vi.stubGlobal('IntersectionObserver', class { observe() {} unobserve() {} disconnect() {} });
-vi.stubGlobal('indexedDB', { open: () => ({}) });
+vi.stubGlobal('IntersectionObserver', class {observe() {} unobserve() {} disconnect() {}});
+vi.stubGlobal('indexedDB', {open: () => ({})});
 
 vi.mock('../components/chat/markupTooltip', () => ({default: {getInstance: () => ({showLinkEditor: () => {}})}}));
 vi.mock('../config/font', () => ({FontFamilyName: {}}));

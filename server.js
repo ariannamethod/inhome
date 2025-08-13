@@ -7,14 +7,11 @@ const fs = require('fs');
 const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
+const { validateCors } = require('./src/config/validateCors');
 
 const app = express();
 
-function parseCorsWhitelist(raw) {
-  return raw ? raw.split(',').map((origin) => origin.trim()).filter(Boolean) : [];
-}
-
-const whitelist = parseCorsWhitelist(process.env.CORS_WHITELIST);
+const whitelist = validateCors(process.env.CORS_WHITELIST);
 if (whitelist.length === 0) {
   console.warn('CORS whitelist is empty; no origins are allowed');
 }
@@ -34,13 +31,13 @@ app.use(
   })
 );
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || whitelist.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error('Origin not allowed by CORS'));
+  cors((req, callback) => {
+    const origin = req.header('Origin');
+    if (!origin || whitelist.includes(origin)) {
+      return callback(null, { origin: true });
     }
+    console.warn('Blocked CORS origin:', origin, 'IP:', req.ip);
+    return callback(new Error('Origin not allowed by CORS'));
   })
 );
 
