@@ -61,7 +61,13 @@ app.get('/api/snapshots/:filename', (req, res) => {
     return res.status(404).json({error: 'Snapshot not found'});
   }
 
-  const data = fs.readFileSync(filepath, 'utf-8');
+  let data;
+  try {
+    data = fs.readFileSync(filepath, 'utf-8');
+  } catch (err) {
+    console.error('Error reading snapshot file:', err.message);
+    return res.status(500).json({ error: 'Failed to read snapshot' });
+  }
   res.json(JSON.parse(data));
 });
 

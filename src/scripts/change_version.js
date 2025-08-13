@@ -15,7 +15,13 @@ const BUILD_KEY = PREFIX + 'BUILD';
 const VERSION_KEY = PREFIX + 'VERSION';
 const VERSION_FULL_KEY = PREFIX + 'VERSION_FULL';
 
-const envStr = fs.readFileSync('./.env').toString();
+let envStr;
+try {
+  envStr = fs.readFileSync('./.env').toString();
+} catch (err) {
+  console.error('Failed to read .env file:', err.message);
+  process.exit(1);
+}
 const env = {};
 envStr.split('\n').forEach(line => {
   if(!line) return;
@@ -38,7 +44,13 @@ fs.writeFileSync('./.env', lines.join('\n') + '\n', 'utf-8');
 fs.writeFileSync('./public/version', env[VERSION_FULL_KEY], 'utf-8');
 
 if(changelog) {
-  const data = fs.readFileSync('./CHANGELOG.md');
+  let data;
+  try {
+    data = fs.readFileSync('./CHANGELOG.md');
+  } catch (err) {
+    console.error('Failed to read CHANGELOG.md:', err.message);
+    process.exit(1);
+  }
   const fd = fs.openSync('./CHANGELOG.md', 'w+');
   const lines = [
     `### ${env[VERSION_FULL_KEY]}`

@@ -3,6 +3,7 @@
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
+const path = require('path');
 
 const gitstatic = require("./git-serve");
 const express = require("express");
@@ -43,8 +44,18 @@ const useHttp = false;
 const transport = useHttp ? http : https;
 let options = {};
 if(!useHttp) {
-  options.key = fs.readFileSync(__dirname + '/certs/server-key.pem');
-  options.cert = fs.readFileSync(__dirname + '/certs/server-cert.pem');
+  try {
+    options.key = fs.readFileSync(path.join(__dirname, 'certs', 'server-key.pem'));
+  } catch (err) {
+    console.error('Failed to load HTTPS key:', err.message);
+    process.exit(1);
+  }
+  try {
+    options.cert = fs.readFileSync(path.join(__dirname, 'certs', 'server-cert.pem'));
+  } catch (err) {
+    console.error('Failed to load HTTPS certificate:', err.message);
+    process.exit(1);
+  }
 }
 
 console.log(results);
