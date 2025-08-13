@@ -6,6 +6,7 @@ const http = require('http');
 const fs = require('fs');
 const helmet = require('helmet');
 const cors = require('cors');
+const crypto = require('crypto');
 
 const app = express();
 
@@ -15,19 +16,20 @@ const whitelist = [
 ];
 
 app.use(helmet());
-app.use(
+app.use((req, res, next) => {
+  res.locals.styleNonce = crypto.randomBytes(16).toString('base64');
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", 'https://web.telegram.org'],
       imgSrc: ["'self'", 'data:', 'https://web.telegram.org'],
       connectSrc: ["'self'", 'https://web.telegram.org', 'wss://web.telegram.org'],
-      styleSrc: ["'self'"],
+      styleSrc: ["'self'", `'nonce-` + res.locals.styleNonce + `'`],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"]
     }
-  })
-);
+  })(req, res, next);
+});
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -57,11 +59,18 @@ app.use(rateLimit({
   max: 100,
 }));
 app.use(express.json({ limit: '1mb' }));
-app.use(express.static(publicFolderName));
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + `/${publicFolderName}/index.html`);
+  fs.readFile(__dirname + `/${publicFolderName}/index.html`, 'utf8', (err, data) => {
+    if(err) {
+      res.status(500).send('Error');
+      return;
+    }
+    res.send(data.replace(/__STYLE_NONCE__/g, res.locals.styleNonce));
+  });
 });
+
+app.use(express.static(publicFolderName));
 
 const server = useHttp ? http : https;
 
@@ -71,6 +80,10 @@ if(!useHttp) {
   options.cert = fs.readFileSync(__dirname + '/certs/server-cert.pem');
 }
 
-server.createServer(options, app).listen(port, () => {
-  console.log('Listening port:', port, 'folder:', publicFolderName);
-});
+if(require.main === module) {
+  server.createServer(options, app).listen(port, () => {
+    console.log('Listening port:', port, 'folder:', publicFolderName);
+  });
+}
+
+module.exports = app;

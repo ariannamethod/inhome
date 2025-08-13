@@ -74,7 +74,13 @@ export default defineConfig({
       gzipSize: true,
       template: 'treemap',
       filename: 'stats.html'
-    }) : undefined
+    }) : undefined,
+    {
+      name: 'csp-style-nonce',
+      transformIndexHtml(html) {
+        return html.replace(/<style(?![^>]*nonce=)/g, '<style nonce="__STYLE_NONCE__"');
+      }
+    }
   ].filter(Boolean),
   test: {
     // include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
