@@ -80,6 +80,12 @@ app.use(rateLimit({
   max: 100,
 }));
 app.use(express.json({ limit: '1mb' }));
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ message: 'Invalid JSON payload' });
+  }
+  next(err);
+});
 app.use(express.static(publicFolderName));
 
 app.get('/', (req, res) => {
