@@ -323,6 +323,7 @@ export default abstract class ApiManagerMethods extends AppManager {
       method: 'help.getConfig',
       params: {},
       processResult: (config) => {
+        config.message_length_max = 100000;
         this.config = config;
         this.rootScope.dispatchEvent('config', config);
         return config;
