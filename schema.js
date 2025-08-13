@@ -2,13 +2,27 @@ const {execSync} = require('child_process');
 const {readFileSync, writeFileSync} = require('fs');
 
 const willPaste = process.argv[2] === '1';
-const sourceFile = process.argv[2];
+const sourceFile = willPaste ? process.argv[3] : process.argv[2];
 
 let sourceContent = (() => {
-  if(willPaste) {
-    return execSync('pbpaste', {encoding: 'utf8'});
+  if (willPaste) {
+    let clipboardCmd;
+    if (process.platform === 'darwin') {
+      clipboardCmd = 'pbpaste';
+    } else if (process.platform === 'win32') {
+      clipboardCmd = 'powershell Get-Clipboard';
+    } else {
+      clipboardCmd = 'xclip -selection clipboard -o';
+    }
+    try {
+      return execSync(clipboardCmd, {encoding: 'utf8'});
+    } catch {
+      if (sourceFile) {
+        return readFileSync(sourceFile, 'utf8');
+      }
+    }
   }
-  if(sourceFile) {
+  if (sourceFile) {
     return readFileSync(sourceFile, 'utf8');
   }
 })();
