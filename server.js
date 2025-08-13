@@ -9,12 +9,14 @@ const cors = require('cors');
 
 const app = express();
 
-const whitelist = process.env.CORS_WHITELIST
-  ? process.env.CORS_WHITELIST.split(',').map((origin) => origin.trim())
-  : [
-      'https://web.telegram.org',
-      'https://t.me'
-    ];
+function parseCorsWhitelist(raw) {
+  return raw ? raw.split(',').map((origin) => origin.trim()).filter(Boolean) : [];
+}
+
+const whitelist = parseCorsWhitelist(process.env.CORS_WHITELIST);
+if (whitelist.length === 0) {
+  console.warn('CORS whitelist is empty; no origins are allowed');
+}
 
 app.use(helmet());
 app.use(
