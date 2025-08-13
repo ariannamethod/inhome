@@ -119,7 +119,7 @@ export class InviteLink {
     if(s.includes('//')) {
       s = url.split('//').slice(1).join('//');
     }
-    this.textElement.replaceChildren(wrapPlainText(s));
+    this.textElement.textContent = wrapPlainText(s);
     this.url = url;
   }
 

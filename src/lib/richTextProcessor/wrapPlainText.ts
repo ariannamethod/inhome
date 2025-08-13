@@ -7,9 +7,6 @@
 import {MessageEntity} from '../../layer';
 import encodeSpoiler from './encodeSpoiler';
 
-/**
- * ! This function is still unsafe to use with .innerHTML
- */
 export default function wrapPlainText(text: string, entities: MessageEntity[] = []) {
   entities.forEach((entity) => {
     if(entity._ === 'messageEntitySpoiler') {
@@ -17,16 +14,20 @@ export default function wrapPlainText(text: string, entities: MessageEntity[] = 
     }
   });
 
-  return text;
-  // if(entities?.length) {
-  //   entities = entities.filter((entity) => entity._ === 'messageEntitySpoiler');
-  // }
-
-  // return wrapRichText(text, {
-  //   entities,
-  //   noEncoding: true,
-  //   noTextFormat: true,
-  //   noLinebreaks: true,
-  //   noLinks: true
-  // }).textContent;
+  return text.replace(/[&<>"']/g, (char) => {
+    switch(char) {
+      case '&':
+        return '&amp;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '"':
+        return '&quot;';
+      case '\'':
+        return '&#39;';
+      default:
+        return char;
+    }
+  });
 }
