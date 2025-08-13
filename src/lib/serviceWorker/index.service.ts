@@ -198,6 +198,9 @@ watchHlsStreamChunksLifetime();
 watchMtprotoOnDev({connectedWindows, onWindowConnected});
 
 const onFetch = (event: FetchEvent): void => {
+  if(event.request.method !== 'GET') {
+    return event.respondWith(fetch(event.request));
+  }
   if(
     import.meta.env.PROD &&
     !IS_SAFARI &&
