@@ -8,7 +8,10 @@ import onMediaLoad from '../onMediaLoad';
 
 // import { getHeavyAnimationPromise } from "../../hooks/useHeavyAnimationCheck";
 
-export const loadedURLs: {[url: string]: boolean} = {};
+import LRUCache from '../lruCache';
+
+export const loadedURLs = new LRUCache<string, true>(100);
+export const purgeLoadedUrl = (url: string) => loadedURLs.delete(url);
 const set = (elem: HTMLElement | HTMLImageElement | SVGImageElement | HTMLVideoElement, url: string) => {
   if(elem instanceof HTMLImageElement || elem instanceof HTMLVideoElement) elem.src = url;
   else if(elem instanceof SVGImageElement) elem.setAttributeNS(null, 'href', url);
@@ -51,7 +54,7 @@ export default function renderImageFromUrl(
     elem.style.opacity = prevOpacity;
   };
 
-  if(loadedURLs[url] && useCache) {
+  if(loadedURLs.has(url) && useCache) {
     set(elem, url);
     requestAnimationFrame(() => {
       elem.style.opacity = prevOpacity || '';
@@ -67,7 +70,7 @@ export default function renderImageFromUrl(
   const onLoad = () => {
     set(elem, url);
 
-    loadedURLs[url] = true;
+    loadedURLs.set(url, true);
     processImageOnLoad?.(loader);
 
     requestAnimationFrame(() => {
