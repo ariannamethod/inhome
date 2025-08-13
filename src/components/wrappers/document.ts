@@ -28,7 +28,7 @@ import wrapPlainText from '../../lib/richTextProcessor/wrapPlainText';
 import rootScope from '../../lib/rootScope';
 import type {ThumbCache} from '../../lib/storages/thumbs';
 import {MediaSearchContext} from '../appMediaPlaybackController';
-import AudioElement from '../audio';
+import AudioElement, {TranscriptionState} from '../audio';
 import confirmationPopup from '../confirmationPopup';
 import LazyLoadQueue from '../lazyLoadQueue';
 import {MiddleEllipsisElement} from '../middleEllipsis';
@@ -109,7 +109,7 @@ export default async function wrapDocument({message,
     audioElement.audio = globalMedia as any;
     if(globalMedia) audioElement.dataset.toBeSkipped = '1';
 
-    if(canTranscribeVoice && doc.type === 'voice') audioElement.transcriptionState = 0;
+    if(canTranscribeVoice && doc.type === 'voice') audioElement.transcriptionState = TranscriptionState.Hidden;
     (audioElement as any).getSize = getSize;
 
     if(voiceAsMusic) audioElement.voiceAsMusic = voiceAsMusic;

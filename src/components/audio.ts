@@ -45,6 +45,12 @@ import makeError from '../helpers/makeError';
 
 const UNMOUNT_PRELOADER = true;
 
+export enum TranscriptionState {
+  Hidden,
+  Loading,
+  Visible
+}
+
 rootScope.addEventListener('messages_media_read', ({mids, peerId}) => {
   mids.forEach((mid) => {
     const attr = `[data-mid="${mid}"][data-peer-id="${peerId}"]`;
@@ -197,35 +203,34 @@ async function wrapVoiceMessage(audioEl: AudioElement) {
 
     speechRecognitionDiv.onclick = () => {
       const speechTextDiv = (findUpClassName(audioEl, 'document-wrapper') || findUpClassName(audioEl, 'quote-text')).querySelector<HTMLElement>('.audio-transcribed-text');
-      if(audioEl.transcriptionState === 0) {
+      if(audioEl.transcriptionState === TranscriptionState.Hidden) {
         if(speechTextDiv) {
           speechTextDiv.classList.remove('hide');
           speechRecognitionIcon.classList.remove(_tgico('transcribe'));
           speechRecognitionIcon.classList.add(_tgico('up'));
-          // TODO: State to enum
-          audioEl.transcriptionState = 2;
+          audioEl.transcriptionState = TranscriptionState.Visible;
         } else {
           const message = audioEl.message;
           if(message.pFlags.is_outgoing) {
             return;
           }
 
-          audioEl.transcriptionState = 1;
+          audioEl.transcriptionState = TranscriptionState.Loading;
           !speechRecognitionLoader.parentElement && speechRecognitionDiv.append(speechRecognitionLoader);
           doubleRaf().then(() => {
-            if(audioEl.transcriptionState === 1) {
+            if(audioEl.transcriptionState === TranscriptionState.Loading) {
               speechRecognitionLoader.classList.add('active');
             }
           });
 
           audioEl.managers.appMessagesManager.transcribeAudio(message).catch(noop);
         }
-      } else if(audioEl.transcriptionState === 2) {
+      } else if(audioEl.transcriptionState === TranscriptionState.Visible) {
         // Hide transcription
         speechTextDiv.classList.add('hide');
         speechRecognitionIcon.classList.remove(_tgico('up'));
         speechRecognitionIcon.classList.add(_tgico('transcribe'));
-        audioEl.transcriptionState = 0;
+        audioEl.transcriptionState = TranscriptionState.Hidden;
       }
     };
 
@@ -499,7 +504,7 @@ export default class AudioElement extends HTMLElement {
   public lazyLoadQueue: LazyLoadQueue;
   public loadPromises: Promise<any>[];
   public managers: AppManagers;
-  public transcriptionState: number;
+  public transcriptionState?: TranscriptionState;
   public uploadingFileName: string;
   public shouldWrapAsVoice?: boolean;
   public customAudioToTextButton?: HTMLElement;
