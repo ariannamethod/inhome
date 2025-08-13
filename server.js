@@ -22,7 +22,7 @@ app.use(
       scriptSrc: ["'self'", 'https://web.telegram.org'],
       imgSrc: ["'self'", 'data:', 'https://web.telegram.org'],
       connectSrc: ["'self'", 'https://web.telegram.org', 'wss://web.telegram.org'],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'"],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"]
     }
