@@ -310,9 +310,7 @@
 
   // * Day theme end
 }
-
-.night {
-//:root {
+@mixin dark-theme {
   // * Night theme
   --body-background-color: #181818;
   --body-background-color-rgb: 24, 24, 24;
@@ -350,6 +348,16 @@
   // * Night theme end
 }
 
+.night {
+  @include dark-theme;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    @include dark-theme;
+  }
+}
+
 .chat {
   --message-highlighting-color: hsla(85.5319, 36.9171%, 40.402%, .4);//rgba(77, 142, 80, .4);
   --message-highlighting-hover-color: rgba(var(--message-highlighting-color-rgb), calc(var(--message-highlighting-alpha) + .24));
@@ -375,8 +383,7 @@
   --message-out-selection-background-color: var(--selection-background-color);
   --message-out-reaction-tag-dot-color: var(--message-reaction-tag-dot-color);
 }
-
-.night .chat {
+@mixin dark-chat {
   --message-time-color: var(--secondary-text-color);
   --message-checkbox-color: var(--primary-color);
   --message-checkbox-border-color: #fff;
@@ -392,6 +399,16 @@
   --message-out-selection-background-color: rgba(var(--surface-color-rgb), .4);
   // --message-out-reaction-tag-dot-color: rgba(var(--message-out-background-color-rgb), 1);
   --message-out-reaction-tag-dot-color: var(--message-out-background-color);
+}
+
+.night .chat {
+  @include dark-chat;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chat {
+    @include dark-chat;
+  }
 }
 
 @import "components/prism";
