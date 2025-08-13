@@ -337,37 +337,20 @@ export default class AppGeneralSettingsTab extends SliderSuperTabEventable {
       const form = document.createElement('form');
       form.style.marginTop = '.5rem';
 
-      const name = 'theme';
       const stateKey = joinDeepPath('settings', 'theme');
 
-      const dayRow = new Row({
-        radioField: new RadioField({
-          langKey: 'ThemeDay',
-          name,
-          value: 'day',
-          stateKey
-        })
+      const darkModeRow = new Row({
+        titleLangKey: 'DarkMode',
+        checkboxFieldOptions: {
+          toggle: true,
+          stateKey,
+          stateValues: ['system', 'night'],
+          listenerSetter: this.listenerSetter
+        },
+        listenerSetter: this.listenerSetter
       });
 
-      const nightRow = new Row({
-        radioField: new RadioField({
-          langKey: 'ThemeNight',
-          name,
-          value: 'night',
-          stateKey
-        })
-      });
-
-      const systemRow = new Row({
-        radioField: new RadioField({
-          langKey: 'AutoNightSystemDefault',
-          name,
-          value: 'system',
-          stateKey
-        })
-      });
-
-      this.listenerSetter.add(rootScope)('settings_updated', ({key, value, settings}) => {
+      this.listenerSetter.add(rootScope)('settings_updated', ({key}) => {
         if(key === stateKey) {
           rootScope.dispatchEvent('theme_change');
         }
@@ -406,7 +389,7 @@ export default class AppGeneralSettingsTab extends SliderSuperTabEventable {
         }
       });
 
-      form.append(dayRow.container, nightRow.container, systemRow.container);
+      form.append(darkModeRow.container);
 
       container.append(
         themesContainer,
