@@ -3681,9 +3681,16 @@ export class AppMessagesManager extends AppManager {
             this.reloadConversationsPeers.delete(peerId);
             c.promise.resolve(undefined);
           }
-        }
 
-        this.dialogsStorage.dropDialogOnDeletion(peerId, threadOrSavedId);
+          const dialog = this.dialogsStorage.getDialogOnly(peerId);
+          const filterId = dialog && this.dialogsStorage.getDialogFilterId(dialog);
+          this.dialogsStorage.dropDialogOnDeletion(peerId);
+          if(filterId !== undefined && filterId !== FOLDER_ID_ALL && !this.dialogsStorage.isVirtualFilter(filterId)) {
+            this.editPeerFolders([peerId], FOLDER_ID_ALL);
+          }
+        } else {
+          this.dialogsStorage.dropDialogOnDeletion(peerId, threadOrSavedId);
+        }
       }
     });
   }
