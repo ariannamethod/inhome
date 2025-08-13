@@ -34,6 +34,7 @@ import TranslatableMessage from './translatableMessage';
 import ListenerSetter from '../helpers/listenerSetter';
 import showTooltip from './tooltip';
 
+const POLL_LINE_D = 'M4.47,5.33v13.6c0,4.97,4.03,9,9,9h458.16';
 let lineTotalLength = 0;
 const tailLength = 9;
 const times = 10;
@@ -291,7 +292,9 @@ export default class PollElement extends HTMLElement {
     });
 
     if(!lineTotalLength) {
-      lineTotalLength = (document.getElementById('poll-line') as any as SVGPathElement).getTotalLength();
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', POLL_LINE_D);
+      lineTotalLength = path.getTotalLength();
       // console.log('line total length:', lineTotalLength);
       PollElement.setMaxLength();
     }
@@ -338,7 +341,7 @@ export default class PollElement extends HTMLElement {
         <div class="poll-answer-percents"></div>
         <div class="poll-answer-text"></div>
         <svg version="1.1" class="poll-line" style="display: none;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 485.9 35" xml:space="preserve">
-          <use href="#poll-line"></use>
+          <use href="/sprite.svg#poll-line"></use>
         </svg>
       </div>
       `;

@@ -138,7 +138,7 @@ export default class CheckboxField {
       checkSvg.classList.add('checkbox-box-check');
       checkSvg.setAttributeNS(null, 'viewBox', '0 0 24 24');
       const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-      use.setAttributeNS(null, 'href', '#check');
+      use.setAttributeNS(null, 'href', '/sprite.svg#check');
       use.setAttributeNS(null, 'x', '-1');
       checkSvg.append(use);
 

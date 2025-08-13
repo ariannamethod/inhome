@@ -40,7 +40,7 @@ export function generateProgressSparkle(): Sparkle {
 }
 
 
-const sparkleTemplate = template(`<svg viewBox="0 0 7 7" xmlns="http://www.w3.org/2000/svg" height="1em" width="1em"><use href="#star-sparkle"></use></svg>`);
+const sparkleTemplate = template(`<svg viewBox="0 0 7 7" xmlns="http://www.w3.org/2000/svg" height="1em" width="1em"><use href="/sprite.svg#star-sparkle"></use></svg>`);
 function renderSparkle(sparkle: Sparkle, isDiv?: boolean) {
   let element: HTMLElement;
   if(isDiv) {

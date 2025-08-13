@@ -6,6 +6,7 @@ const path = require('path');
 const keepAsset = require('./keepAsset');
 const {NodeSSH} = require('node-ssh');
 const zlib = require('zlib');
+const {optimize} = require('svgo');
 
 const npmCmd = /^win/.test(process.platform) ? 'npm.cmd' : 'npm';
 const version = process.argv[2] || 'same';
@@ -58,6 +59,20 @@ async function clearOldFiles() {
   }
 }
 
+async function buildSprite() {
+  try {
+    const spritePath = path.join(__dirname, 'src/assets/sprite.svg');
+    const distSpritePath = path.join(distPath, 'sprite.svg');
+    const data = await fs.readFile(spritePath, 'utf8');
+    const {data: optimized} = optimize(data, {multipass: true});
+    await fs.mkdir(distPath, {recursive: true});
+    await fs.writeFile(distSpritePath, optimized);
+    console.log('Optimized sprite');
+  } catch(err) {
+    console.error('Sprite optimization failed:', err);
+  }
+}
+
 child.on('close', (code) => {
   if(code != 0) {
     console.log(`child process exited with code ${code}`);
@@ -86,6 +101,7 @@ const ssh = new NodeSSH();
 const onCompiled = async() => {
   console.log('Compiled successfully.');
   try {
+    await buildSprite();
     await copyFiles(distPath, publicPath);
   } catch(err) {
     console.error('Copying files failed:', err);

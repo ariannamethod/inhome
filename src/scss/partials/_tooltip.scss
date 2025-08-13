@@ -61,7 +61,7 @@
     width: 19px;
     height: 8px;
     left: var(--notch-offset);
-    clip-path: url(#tooltip-notch-clip);
+    clip-path: url(/sprite.svg#tooltip-notch-clip);
 
     .tooltip-bottom & {
       top: -7px;

@@ -8,12 +8,10 @@ import {hexaToHsla} from '../helpers/color';
 import {TOPIC_COLORS} from '../lib/mtproto/mtproto_config';
 import wrapAbbreviation from '../lib/richTextProcessor/wrapAbbreviation';
 
-let svg: SVGSVGElement, span: HTMLElement, defs: HTMLElement;
+let svg: SVGSVGElement, span: HTMLElement, defs: SVGDefsElement;
 const hadColors: Map<number, string> = new Map();
 export default function topicAvatar(color: number, content: string) {
   if(!svg) {
-    defs = document.getElementById('svg-defs') as HTMLElement;
-
     const ns = 'http://www.w3.org/2000/svg';
 
     svg = document.createElementNS(ns, 'svg');
@@ -22,8 +20,11 @@ export default function topicAvatar(color: number, content: string) {
     svg.setAttributeNS(null, 'viewBox', '0 0 26 26');
     svg.classList.add('topic-icon-svg');
 
+    defs = document.createElementNS(ns, 'defs');
+    svg.append(defs);
+
     const use = document.createElementNS(ns, 'use');
-    use.setAttributeNS(null, 'href', '#topic-icon');
+    use.setAttributeNS(null, 'href', '/sprite.svg#topic-icon');
     svg.append(use);
 
     span = document.createElement('span');

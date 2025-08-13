@@ -38,12 +38,12 @@ export {};
   } else {
     if(isOut) {
       clipPathHTML += `
-      <use href="#message-tail" transform="translate(${width - 2}, ${height}) scale(-1, -1)"></use>
+      <use href="/sprite.svg#message-tail" transform="translate(${width - 2}, ${height}) scale(-1, -1)"></use>
       <path />
       `;
     } else {
       clipPathHTML += `
-      <use href="#message-tail" transform="translate(2, ${height}) scale(1, -1)"></use>
+      <use href="/sprite.svg#message-tail" transform="translate(2, ${height}) scale(1, -1)"></use>
       <path />
       `;
     }
