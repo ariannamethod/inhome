@@ -9,7 +9,11 @@ First, shut down the dev server of the main app, as we don't want anything happe
 ```sh
 cd ./snapshot-server
 
-pnpm start --port=8080 # Make sure the port matches your usual development port, don't specify if you want the 8080 default
+# Uses PORT env variable or defaults to 8080
+pnpm start
+
+# Or specify a custom port
+PORT=3000 pnpm start
 ```
 
 Go to `http://localhost:8080`, then in `chrome://inspect` (or your browser's equivalent), just in case check if there is no active service worker, or any other workers for the localhost if there are any. Note that the workers may interfere with the read/write operations in the indexed DB.

@@ -7,7 +7,7 @@ const {streamObject} = require('stream-json/streamers/StreamObject');
 
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 const SNAPSHOT_DIR = path.join(__dirname, 'snapshots');
 
 // Ensure snapshot folder exists

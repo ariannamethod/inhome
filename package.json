@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "start": "vite --force",
-    "serve": "pnpm run build; node server.js",
+    "start": "vite --force --port ${PORT:-8080}",
+    "serve": "pnpm run build && PORT=${PORT:-8080} node server.js",
     "build": "pnpm run generate-changelog && vite build",
     "test": "vitest",
     "whybundled": "pnpm run profile && whybundled stats.json",
