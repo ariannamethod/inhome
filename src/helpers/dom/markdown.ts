@@ -27,8 +27,6 @@ type MarkdownCache = {
 };
 
 export function createMarkdownCache(input: HTMLElement): MarkdownCache {
-  return;
-
   const cache: MarkdownCache = {
     lockRedo: false,
     canRedoFromHTML: '',
@@ -39,6 +37,57 @@ export function createMarkdownCache(input: HTMLElement): MarkdownCache {
 
   cacheMap.set(input, cache);
   return cache;
+}
+
+export const MARKDOWN_HISTORY_LIMIT = 50;
+
+function getCache(input: HTMLElement): MarkdownCache | undefined {
+  return cacheMap.get(input);
+}
+
+export function pushMarkdownSnapshot(input: HTMLElement) {
+  const cache = getCache(input) || createMarkdownCache(input);
+  const html = input.innerHTML;
+  if(cache.executedHistory[cache.executedHistory.length - 1] === html) {
+    return;
+  }
+
+  cache.executedHistory.push(html);
+  if(cache.executedHistory.length > MARKDOWN_HISTORY_LIMIT) {
+    cache.executedHistory.shift();
+  }
+
+  cache.undoHistory.length = 0;
+}
+
+export function getPreviousMarkdownSnapshot(input: HTMLElement): string | undefined {
+  const cache = getCache(input);
+  if(!cache || cache.executedHistory.length < 2) {
+    return;
+  }
+
+  const current = cache.executedHistory.pop()!;
+  cache.undoHistory.push(current);
+  if(cache.undoHistory.length > MARKDOWN_HISTORY_LIMIT) {
+    cache.undoHistory.shift();
+  }
+
+  return cache.executedHistory[cache.executedHistory.length - 1];
+}
+
+export function getNextMarkdownSnapshot(input: HTMLElement): string | undefined {
+  const cache = getCache(input);
+  if(!cache || !cache.undoHistory.length) {
+    return;
+  }
+
+  const next = cache.undoHistory.pop()!;
+  cache.executedHistory.push(next);
+  if(cache.executedHistory.length > MARKDOWN_HISTORY_LIMIT) {
+    cache.executedHistory.shift();
+  }
+
+  return next;
 }
 
 export function clearMarkdownExecutions(input: HTMLElement) {
