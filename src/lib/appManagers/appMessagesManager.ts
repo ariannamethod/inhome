@@ -2253,7 +2253,7 @@ export class AppMessagesManager extends AppManager {
     if(peerId !== fromId) {
       pFlags.out = true;
 
-      if(!this.appPeersManager.isChannel(peerId) && !this.appUsersManager.isBot(peerId)) {
+      if(!this.appPeersManager.isChannel(peerId)) {
         pFlags.unread = true;
       }
     }
