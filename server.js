@@ -108,22 +108,46 @@ app.get('/', (req, res) => {
 
 const server = useHttp ? http : https;
 
+const keyPath = path.join(__dirname, 'certs', 'server-key.pem');
+const certPath = path.join(__dirname, 'certs', 'server-cert.pem');
+
 let options = {};
-if(!useHttp) {
-  try {
-    options.key = fs.readFileSync(path.join(__dirname, 'certs', 'server-key.pem'));
-  } catch (err) {
-    console.error('Failed to load HTTPS key:', err.message);
+if (!useHttp) {
+  if (!fs.existsSync(keyPath)) {
+    console.error('HTTPS key file not found:', keyPath);
+    process.exit(1);
+  }
+  if (!fs.existsSync(certPath)) {
+    console.error('HTTPS certificate file not found:', certPath);
     process.exit(1);
   }
   try {
-    options.cert = fs.readFileSync(path.join(__dirname, 'certs', 'server-cert.pem'));
+    options.key = fs.readFileSync(keyPath);
+    options.cert = fs.readFileSync(certPath);
   } catch (err) {
-    console.error('Failed to load HTTPS certificate:', err.message);
+    console.error('Failed to load HTTPS credentials:', err.message);
     process.exit(1);
   }
 }
 
-server.createServer(options, app).listen(port, () => {
+const httpServer = server.createServer(options, app);
+
+if (!useHttp) {
+  const reloadCert = () => {
+    try {
+      const newKey = fs.readFileSync(keyPath);
+      const newCert = fs.readFileSync(certPath);
+      httpServer.setSecureContext({ key: newKey, cert: newCert });
+      console.log('TLS certificate reloaded');
+    } catch (err) {
+      console.error('Failed to reload HTTPS certificate:', err.message);
+    }
+  };
+
+  fs.watch(keyPath, reloadCert);
+  fs.watch(certPath, reloadCert);
+}
+
+httpServer.listen(port, () => {
   console.log('Listening port:', port, 'folder:', publicFolderName);
 });
