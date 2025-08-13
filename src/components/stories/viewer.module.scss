@@ -934,7 +934,7 @@ $color-inactive: rgba(255, 255, 255, .5);
       // }
 
       .bubble-tail {
-        clip-path: url(#message-tail-clip);
+        clip-path: url(/sprite.svg#message-tail-clip);
         transform: scale(-1);
         inset-inline-end: -7px;
         bottom: 0px;

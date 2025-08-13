@@ -9283,7 +9283,7 @@ export function generateTail(asSpan?: boolean) {
   svg.classList.add('bubble-tail');
 
   const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-  use.setAttributeNS(null, 'href', '#message-tail-filled');
+  use.setAttributeNS(null, 'href', '/sprite.svg#message-tail-filled');
   // use.classList.add('bubble-tail-use');
 
   svg.append(use);

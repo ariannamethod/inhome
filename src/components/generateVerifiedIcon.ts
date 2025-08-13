@@ -10,11 +10,11 @@ export default function generateVerifiedIcon() {
   svg.classList.add('verified-icon-svg');
 
   const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-  use.setAttributeNS(null, 'href', '#verified-icon-background');
+  use.setAttributeNS(null, 'href', '/sprite.svg#verified-icon-background');
   use.classList.add('verified-icon-background');
 
   const use2 = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-  use2.setAttributeNS(null, 'href', '#verified-icon-check');
+  use2.setAttributeNS(null, 'href', '/sprite.svg#verified-icon-check');
   use2.classList.add('verified-icon-check');
 
   // svg.append(use, use2);

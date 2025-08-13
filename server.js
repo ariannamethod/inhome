@@ -57,7 +57,11 @@ const port = forcePort ? +forcePort : (+process.env.PORT || (thirdTour ? 8443 : 
 
 app.set('etag', false);
 app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store');
+  if(req.path.endsWith('.svg')) {
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  } else {
+    res.set('Cache-Control', 'no-store');
+  }
   next();
 });
 app.use(compression());
