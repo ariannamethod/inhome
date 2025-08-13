@@ -1,7 +1,7 @@
 {
-  "name": "tweb",
+  "name": "indiana_lighthouse",
   "version": "1.0.0",
-  "description": "",
+  "description": "Indiana's Lighthouse web application",
   "main": "index.js",
   "scripts": {
     "preinstall": "npx only-allow pnpm",

@@ -718,6 +718,16 @@ export class AppSidebarLeft extends SidebarSlider {
       separator: true
     }, () => this.createNewChatsSubmenu());
 
+    const logOffBtn: typeof menuButtons[0] = {
+      icon: 'logout',
+      regularText: 'Log off',
+      onClick: () => {
+        closeTabsBefore(() => {
+          this.managers.apiManager.logOut();
+        });
+      }
+    };
+
     const menuButtons: (ButtonMenuItemOptions & {verify?: () => boolean | Promise<boolean>})[] = [{
       icon: 'plus',
       text: 'MultiAccount.AddAccount',
@@ -789,7 +799,7 @@ export class AppSidebarLeft extends SidebarSlider {
           this.createTab(AppSettingsTab).open();
         });
       }
-    }, moreSubmenu.menuBtnOptions];
+    }, logOffBtn, moreSubmenu.menuBtnOptions];
 
     const filteredButtons = menuButtons.filter(Boolean);
     const filteredButtonsSliced = filteredButtons.slice();

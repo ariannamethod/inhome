@@ -1,8 +1,8 @@
 {
-    "name": "Telegram Web",
-    "short_name": "Telegram Web",
+    "name": "Indiana's Lighthouse",
+    "short_name": "Indiana's Lighthouse",
     "start_url": "./",
-    "description": "Telegram is a cloud-based mobile and desktop messaging app with a focus on security and speed.",
+    "description": "Indiana's Lighthouse is a cloud-based mobile and desktop messaging app with a focus on security and speed.",
     "icons": [
         {
             "src": "assets/img/icon_square_192.png?v=jw3mK7G9Ry",
