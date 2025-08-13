@@ -58,7 +58,6 @@ import SetTransition from '../singleTransition';
 import handleHorizontalSwipe from '../../helpers/dom/handleHorizontalSwipe';
 import findUpAttribute from '../../helpers/dom/findUpAttribute';
 import findUpAsChild from '../../helpers/dom/findUpAsChild';
-import {createEffect, createRoot} from 'solid-js';
 import {createVirtualizer, type Virtualizer} from '@tanstack/solid-virtual';
 import {wrapCallDuration} from '../wrappers/wrapDuration';
 import IS_CALL_SUPPORTED from '../../environment/callSupport';
@@ -346,6 +345,8 @@ export default class ChatBubbles {
   public chatInner: HTMLDivElement;
   public scrollable: Scrollable;
   private virtualizer: Virtualizer<HTMLDivElement, HTMLElement>;
+  private allBubbles: HTMLElement[] = [];
+  private hiddenFragment = document.createDocumentFragment();
 
   private getHistoryTopPromise: Promise<boolean>;
   private getHistoryBottomPromise: Promise<boolean>;
@@ -1147,37 +1148,45 @@ export default class ChatBubbles {
     const chatInner = this.chatInner = document.createElement('div');
     chatInner.classList.add('bubbles-inner');
 
-    // mount inner list into scrollable container for virtualization
-    this.scrollable.container.append(chatInner);
+    const [count, setCount] = createSignal(0);
 
-    // setup virtualizer to render only visible message bubbles
-    createRoot(() => {
-      this.virtualizer = createVirtualizer({
-        count: () => this.scrollable.container.childElementCount,
-        getScrollElement: () => this.scrollable.container,
-        estimateSize: () => 72,
-        overscan: 10
-      });
+    const register = (node: Node, ref?: Node | null) => {
+      if(!(node instanceof HTMLElement)) return;
+      if(ref) {
+        const idx = this.allBubbles.indexOf(ref as HTMLElement);
+        this.allBubbles.splice(idx, 0, node);
+      } else {
+        this.allBubbles.push(node);
+      }
+      setCount(this.allBubbles.length);
+    };
 
-      const renderRange = () => {
-        const items = this.virtualizer.getVirtualItems();
-        chatInner.style.height = `${this.virtualizer.getTotalSize()}px`;
-        chatInner.innerHTML = '';
+    const origAppendChild = chatInner.appendChild.bind(chatInner);
+    chatInner.appendChild = (node: Node) => {
+      const res = origAppendChild(node);
+      register(node);
+      return res;
+    };
 
-        items.forEach((item) => {
-          const el = this.scrollable.container.children.item(item.index) as HTMLElement;
-          if(el) {
-            el.style.position = 'absolute';
-            el.style.top = '0';
-            el.style.left = '0';
-            el.style.transform = `translateY(${item.start}px)`;
-            chatInner.append(el);
-          }
-        });
-      };
+    const origInsertBefore = chatInner.insertBefore.bind(chatInner);
+    chatInner.insertBefore = (node: Node, ref: Node | null) => {
+      const res = origInsertBefore(node, ref);
+      register(node, ref);
+      return res;
+    };
 
-      createEffect(renderRange);
-    });
+    const origRemoveChild = chatInner.removeChild.bind(chatInner);
+    chatInner.removeChild = (node: Node) => {
+      const res = origRemoveChild(node);
+      if(node instanceof HTMLElement) {
+        const idx = this.allBubbles.indexOf(node);
+        if(idx > -1) {
+          this.allBubbles.splice(idx, 1);
+          setCount(this.allBubbles.length);
+        }
+      }
+      return res;
+    };
 
     const removerContainer = document.createElement('div');
     removerContainer.classList.add('bubbles-remover-container');
@@ -1188,6 +1197,39 @@ export default class ChatBubbles {
     this.setScroll();
 
     container.append(removerContainer, this.scrollable.container);
+
+    // setup virtualizer to render only visible message bubbles
+    createRoot(() => {
+      this.virtualizer = createVirtualizer({
+        count,
+        getScrollElement: () => this.scrollable.container,
+        estimateSize: () => 72,
+        overscan: 10
+      });
+
+      const renderRange = () => {
+        const items = this.virtualizer.getVirtualItems();
+        chatInner.style.height = `${this.virtualizer.getTotalSize()}px`;
+
+        while(chatInner.firstChild) {
+          this.hiddenFragment.append(chatInner.firstChild);
+        }
+
+        items.forEach((item) => {
+          const el = this.allBubbles[item.index];
+          if(el) {
+            el.style.position = 'absolute';
+            el.style.top = '0';
+            el.style.left = '0';
+            el.style.transform = `translateY(${item.start}px)`;
+            origAppendChild(el);
+            this.virtualizer.measureElement(el);
+          }
+        });
+      };
+
+      createEffect(renderRange);
+    });
   }
 
   public attachContainerListeners() {
