@@ -53,10 +53,16 @@ app.use((err, req, res, next) => {
 
 const thirdTour = process.argv[2] == 3;
 const forcePort = process.argv[3];
-const useHttp = process.argv[4] !== 'https';
+// Use HTTPS by default; enable HTTP only when explicitly flagged
+const useHttp = process.argv[4] === 'http';
 
 const publicFolderName = thirdTour ? 'public3' : 'public';
 const port = forcePort ? +forcePort : (+process.env.PORT || (thirdTour ? 8443 : 8080));
+
+// Apply HSTS when running over HTTPS
+if (!useHttp) {
+  app.use(helmet.hsts({ maxAge: 31536000 }));
+}
 
 app.set('etag', false);
 app.use((req, res, next) => {
